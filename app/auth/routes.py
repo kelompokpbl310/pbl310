@@ -13,9 +13,9 @@ def login():
         return redirect(url_for('main.index'))
 
     if request.method == 'POST':
-        email = request.form.get('email')
+        username = request.form.get('username')
         password = request.form.get('password')
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter_by(username=username).first()
 
         if user and user.check_password(password):
             login_user(user)
@@ -23,7 +23,7 @@ def login():
             if user.role == 'admin':
                 return redirect(next_page or url_for('admin.dashboard'))
             return redirect(next_page or url_for('main.index'))
-        flash('Email atau password salah.', 'error')
+        flash('Username atau password salah.', 'error')
 
     return render_template('login.html')
 
@@ -35,6 +35,7 @@ def register():
 
     if request.method == 'POST':
         fullname = request.form.get('fullname')
+        username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
         confirm = request.form.get('confirm')
@@ -43,10 +44,14 @@ def register():
             flash('Password dan konfirmasi tidak cocok.', 'error')
         elif len(password) < 6:
             flash('Password minimal 6 karakter.', 'error')
+        elif not email:
+            flash('Email wajib diisi.', 'error')
+        elif User.query.filter_by(username=username).first():
+            flash('Username sudah terdaftar.', 'error')
         elif User.query.filter_by(email=email).first():
             flash('Email sudah terdaftar.', 'error')
         else:
-            user = User(fullname=fullname, email=email)
+            user = User(fullname=fullname, username=username, email=email)
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
@@ -56,7 +61,7 @@ def register():
     return render_template('register.html')
 
 
-@bp.route('/logout')
+@bp.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
     logout_user()

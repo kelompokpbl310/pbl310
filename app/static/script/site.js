@@ -312,4 +312,43 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.key === 'Escape') { selected = 0; paint(0); hideTip(); }
     });
   })();
+
+  // Profile dropdown toggle
+  const profileBtn = document.getElementById('profile-btn');
+  const profileMenu = document.getElementById('profile-menu');
+
+  if (profileBtn && profileMenu) {
+    profileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileMenu.classList.toggle('hidden');
+      profileBtn.setAttribute('aria-expanded', !profileMenu.classList.contains('hidden'));
+    });
+
+    // Close on click outside
+    document.addEventListener('click', (e) => {
+      if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
+        profileMenu.classList.add('hidden');
+        profileBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        profileMenu.classList.add('hidden');
+        profileBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  // Flash message auto-dismiss
+  $$("[data-flash]").forEach((el) => {
+    const delay = Number(el.dataset.flash) || 5000;
+    setTimeout(() => {
+      el.style.transition = "opacity 300ms ease, transform 300ms ease";
+      el.style.opacity = "0";
+      el.style.transform = "translateY(-8px)";
+      setTimeout(() => el.remove(), 300);
+    }, delay);
+  });
 });
