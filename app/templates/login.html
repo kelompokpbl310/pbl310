@@ -1,0 +1,73 @@
+{% extends "base.html" %} {% block title %}Login | Catering Batam{% endblock %}
+{% block description %}Masuk atau daftar akun Catering Batam untuk memesan
+catering aqiqah dengan lebih cepat.{% endblock %} {% block content %}
+<section class="py-8 bg-cream min-h-screen scroll-mt-24">
+  <div class="mx-auto w-full max-w-4xl px-6 sm:px-12 lg:px-20">
+    <div class="p-8 sm:p-12 lg:p-16">
+      <div class="flex min-h-[28rem] items-center justify-center">
+        <section
+          id="masuk"
+          data-auth="masuk"
+          class="w-full max-w-md rounded-2xl border border-gold/30 bg-maroon mendung p-8 text-center text-white shadow-2xl sm:p-12"
+        >
+          <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">
+            Login
+          </h1>
+          <p
+            class="mx-auto mt-6 mb-10 max-w-xs text-sm leading-relaxed text-white/80 sm:text-base"
+          >
+            Masukkan username dan password anda untuk login
+          </p>
+          <form method="POST" class="space-y-4">
+            <div class="text-left">
+              <label for="login-username" class="sr-only">Username</label
+              ><input
+                id="login-username"
+                name="username"
+                type="text"
+                placeholder="Username"
+                autocomplete="username"
+                required
+                class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30"
+              />
+            </div>
+            <div class="text-left">
+              <label for="login-password" class="sr-only">Password</label
+              ><input
+                id="login-password"
+                name="password"
+                type="password"
+                placeholder="Password"
+                autocomplete="current-password"
+                required
+                class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30"
+              />
+            </div>
+            <button
+              type="submit"
+              class="inline-flex items-center justify-center gap-2 rounded-full bg-cream px-7 py-3 text-sm font-semibold text-maroon shadow-sm transition hover:bg-white my-2 min-w-[10rem]"
+            >
+              Login
+            </button>
+          </form>
+          <p
+            data-auth-ok
+            class="my-4 hidden rounded-xl bg-white/15 p-3 text-sm font-medium"
+          >
+            Berhasil! Terima kasih, data Anda sudah kami terima.
+          </p>
+          <div class="mt-8 border-t border-white/15 py-5 text-sm text-white/80">
+            <p>Belum memiliki akun?</p>
+            <a
+              href="{{ url_for('auth.register') }}"
+              class="font-semibold text-white underline underline-offset-4 hover:text-cream"
+            >
+              Daftar di sini
+            </a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

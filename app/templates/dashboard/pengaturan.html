@@ -1,0 +1,74 @@
+{% extends "dashboard/base.html" %}
+{% set active = 'pengaturan' %}
+{% block title %}Pengaturan | Dashboard Catering Batam{% endblock %}
+{% block eyebrow %}Pengaturan toko{% endblock %}
+{% block heading %}Pengaturan{% endblock %}
+{% block content %}
+<!-- Ledger strip -->
+<section class="grid grid-cols-1 divide-y divide-maroon/15 rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] sm:grid-cols-3 sm:divide-x sm:divide-y-0 transition-shadow hover:shadow-md" aria-label="Status toko">
+  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Status dapur</p>
+    <p class="mt-1 font-opsdisplay text-2xl font-bold text-maroon-dark">Buka • 08–20</p>
+    <p class="mt-1 text-xs text-ink/60">Senin–Minggu, Batam Centre</p>
+  </div>
+  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Antar aktif</p>
+    <p class="mt-1 font-opsdisplay text-2xl font-bold tabular-nums text-maroon-dark">7 kecamatan</p>
+    <p class="mt-1 text-xs text-ink/60">Gratis antar se-Batam</p>
+  </div>
+  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Pembayaran</p>
+    <p class="mt-1 font-opsdisplay text-2xl font-bold text-maroon-dark">QRIS + COD</p>
+    <p class="mt-1 text-xs text-ink/60">DP 30% untuk aqiqah</p>
+  </div>
+</section>
+
+<section class="mt-4 grid gap-4 xl:grid-cols-2">
+  <form class="rounded-xl border border-maroon/15 bg-white p-6 transition-shadow hover:shadow-md" onsubmit="return false;">
+    <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark">Profil toko</h2>
+    <p class="mt-1 text-xs text-ink/60">Tampil di struk, sertifikat, dan halaman toko.</p>
+    <label class="mt-4 block text-[11px] font-bold uppercase tracking-widest text-maroon">Nama toko
+      <input value="Catering Batam — Aqiqah & Kambing" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm font-semibold normal-case tracking-normal text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+    </label>
+    <label class="mt-3 block text-[11px] font-bold uppercase tracking-widest text-maroon">WhatsApp
+      <input value="+62 812 699 9825" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm tabular-nums text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+    </label>
+    <label class="mt-3 block text-[11px] font-bold uppercase tracking-widest text-maroon">Alamat dapur
+      <textarea rows="2" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150">Batam Centre, Kota Batam</textarea>
+    </label>
+    <label class="mt-3 block text-[11px] font-bold uppercase tracking-widest text-maroon">Jam operasional
+      <input value="Senin–Minggu 08.00–20.00" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm tabular-nums text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+    </label>
+    <button type="submit" class="mt-5 w-full rounded-lg bg-maroon py-3 text-sm font-bold text-white hover:bg-maroon-dark shadow-sm transition-all duration-150">Simpan perubahan</button>
+  </form>
+
+  <div class="space-y-4">
+    <div class="rounded-xl border border-maroon/15 bg-white p-6 transition-shadow hover:shadow-md">
+      <div class="flex items-center justify-between">
+        <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark">Antar & pembayaran</h2>
+        <span class="rounded-lg bg-cream px-2.5 py-1 text-[11px] font-bold text-maroon-dark">3 aktif</span>
+      </div>
+      <div class="mt-4 space-y-2">
+        <label class="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-maroon/15 bg-paper px-4 py-3 text-sm font-semibold text-ink hover:bg-cream/50 transition-colors">Gratis antar se-Batam<input type="checkbox" checked class="h-5 w-5 shrink-0 accent-maroon" /></label>
+        <label class="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-maroon/15 bg-paper px-4 py-3 text-sm font-semibold text-ink hover:bg-cream/50 transition-colors">QRIS aktif<input type="checkbox" checked class="h-5 w-5 shrink-0 accent-maroon" /></label>
+        <label class="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-maroon/15 bg-paper px-4 py-3 text-sm font-semibold text-ink hover:bg-cream/50 transition-colors">COD aktif<input type="checkbox" checked class="h-5 w-5 shrink-0 accent-maroon" /></label>
+      </div>
+      <p class="mt-3 text-xs leading-relaxed text-ink/60">Matikan COD saat hujan deras agar kurir tidak membawa kembalian berlebih.</p>
+    </div>
+
+    <div class="rounded-xl border border-maroon-dark bg-maroon p-6 text-cream transition-shadow hover:shadow-lg">
+      <p class="text-[11px] font-bold uppercase tracking-widest text-gold">Aqiqah • Dokumen</p>
+      <h2 class="mt-1 font-opsdisplay text-lg font-bold">Template sertifikat aqiqah</h2>
+      <p class="mt-1 text-sm leading-relaxed text-cream/80">Otomatis mencantumkan nama anak, tanggal sembelih, dan nama penyembelih.</p>
+      <dl class="mt-4 grid grid-cols-2 gap-2 text-xs">
+        <div class="rounded-lg border border-cream/25 px-3 py-2"><dt class="text-cream/60">Nama anak</dt><dd class="mt-0.5 font-bold">Ahmad Zaidan</dd></div>
+        <div class="rounded-lg border border-cream/25 px-3 py-2"><dt class="text-cream/60">Tgl sembelih</dt><dd class="mt-0.5 font-bold tabular-nums">18 Okt 2026</dd></div>
+      </dl>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button type="button" class="rounded-lg bg-cream px-5 py-2.5 text-xs font-bold text-maroon-dark hover:bg-white transition-colors">Pratinjau sertifikat</button>
+        <button type="button" class="rounded-lg border border-cream/40 px-5 py-2.5 text-xs font-bold text-cream hover:bg-white/10 transition-colors">Ubah template</button>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

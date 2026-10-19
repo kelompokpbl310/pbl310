@@ -1,0 +1,393 @@
+{% extends "base.html" %} {% block title %}Beranda | Catering Batam{% endblock
+%} {% block description %}Catering aqiqah terbaik di Batam: sate, gulai, kebuli,
+dan kambing guling khas rempah pilihan.{% endblock %} {% block content %}
+<section id="profil" class="relative z-10 scroll-mt-24 bg-cream">
+  <div
+    class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20 grid items-end gap-8 pt-14 lg:grid-cols-12 lg:pt-20"
+  >
+    <div class="pb-14 lg:col-span-7 lg:pb-24">
+      <h1 class="text-4xl font-extrabold leading-tight text-maroon lg:text-5xl">
+        Catering Aqiqah<br />Terbaik Di Batam
+      </h1>
+      <p
+        class="mt-6 max-w-xl text-base leading-relaxed text-maroon/90 sm:text-lg"
+      >
+        Menyediakan Catering Dan Aqiqah Untuk Berbagai Acara Keluarga, Syukuran,
+        Hingga Bento Box Harian Dengan Pilihan Menu Sate, Gulai, Kebuli, Dan
+        Kambing Guling Khas Rempah Pilihan.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a
+          href="{{ url_for('main.produk') }}"
+          class="inline-flex items-center justify-center gap-2 rounded-full bg-maroon px-7 py-3 text-sm font-semibold text-white shadow transition hover:bg-maroon-dark"
+          >Lihat Paket Aqiqah</a
+        ><a
+          href="{{ url_for('main.tentang') }}"
+          class="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-maroon px-7 py-2.5 text-sm font-semibold text-maroon transition hover:bg-maroon hover:text-white"
+          >Tentang Kami</a
+        >
+      </div>
+    </div>
+    <div class="hidden justify-center lg:col-span-5 lg:flex lg:justify-end">
+      <img
+        src="{{ url_for('static', filename='img/goat.png') }}"
+        alt="Kambing putih"
+        class="-mb-12 h-80 w-auto object-contain lg:h-[30rem]"
+      />
+    </div>
+  </div>
+</section>
+<section id="mengapa-kami" class="scroll-mt-24 pb-16 pt-28 text-white">
+  <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20">
+    <div class="mx-auto mb-12 max-w-2xl text-center">
+      <h2 class="text-3xl font-extrabold sm:text-4xl text-white">
+        Mengapa Harus Kami?
+      </h2>
+    </div>
+    <div data-carousel class="relative">
+      <button
+        type="button"
+        data-prev
+        aria-label="Slide sebelumnya"
+        class="absolute -left-1 top-[35%] z-10 -translate-y-1/2 rounded-full bg-maroon-dark/60 p-1.5 text-cream transition hover:scale-110 sm:top-1/2 lg:-left-14 lg:bg-transparent lg:p-0"
+      >
+        <svg class="h-6 w-6 lg:h-12 lg:w-12" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 3v18L5 12z" />
+        </svg>
+      </button>
+      <div class="mx-auto max-w-5xl">
+        <div
+          data-slide
+          class="grid items-center gap-8 md:grid-cols-12 lg:gap-12"
+        >
+          <div class="md:col-span-6">
+            <div
+              class="aspect-[4/3] overflow-hidden rounded-lg border-4 border-cream bg-stone-800"
+            >
+              <img
+                src="{{ url_for('static', filename='img/dokumentasi.jpg') }}"
+                alt="Kepercayaan Anda Yang Utama"
+                class="h-full w-full object-cover"
+              />
+            </div>
+          </div>
+          <div class="md:col-span-6">
+            <span
+              class="mb-2 block text-xs font-bold uppercase tracking-widest text-cream"
+              >Sertifikat & Dokumentasi</span
+            >
+            <h3
+              class="text-2xl font-extrabold leading-snug text-white sm:text-3xl lg:text-4xl"
+            >
+              Kepercayaan Anda Yang Utama
+            </h3>
+            <p class="mt-4 text-base leading-relaxed text-white/85 sm:text-lg">
+              Dapatkan Dokumentasi Lengkap Dan Sertifikat. Kami Mengutamakan
+              Transparansi Kepada Seluruh Pelanggan Kami.
+            </p>
+            <ul class="mt-6 space-y-3 text-sm text-white/90">
+              <li class="flex items-center gap-3">
+                <span
+                  class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-cream"
+                  >✓</span
+                >Hewan sehat, cukup umur & bebas cacat
+              </li>
+              <li class="flex items-center gap-3">
+                <span
+                  class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-cream"
+                  >✓</span
+                >Penyembelihan menyebut nama sohibul aqiqah
+              </li>
+              <li class="flex items-center gap-3">
+                <span
+                  class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-cream"
+                  >✓</span
+                >Dokumentasi foto & video berlabel nama anak
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div
+          data-slide
+          class="hidden grid items-center gap-8 md:grid-cols-12 lg:gap-12"
+        >
+          <div class="md:col-span-6">
+            <div
+              class="aspect-[4/3] overflow-hidden rounded-lg border-4 border-cream bg-stone-800"
+            >
+              <img
+                src="{{ url_for('static', filename='img/assets1.png') }}"
+                alt="100% Syar'i & Halal"
+                class="h-full w-full object-cover"
+              />
+            </div>
+          </div>
+          <div class="md:col-span-6">
+            <span
+              class="mb-2 block text-xs font-bold uppercase tracking-widest text-cream"
+              >Syar'i & Halal</span
+            >
+            <h3
+              class="text-2xl font-extrabold leading-snug text-white sm:text-3xl lg:text-4xl"
+            >
+              100% Syar'i & Halal
+            </h3>
+            <p class="mt-4 text-base leading-relaxed text-white/85 sm:text-lg">
+              Seluruh hewan disembelih sesuai syariat dan diolah dengan standar
+              kebersihan yang terjaga.
+            </p>
+            <ul class="mt-6 space-y-3 text-sm text-white/90">
+              <li class="flex items-center gap-3">
+                <span
+                  class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-cream"
+                  >✓</span
+                >Penyembelih terlatih & bersertifikat
+              </li>
+              <li class="flex items-center gap-3">
+                <span
+                  class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-cream"
+                  >✓</span
+                >Dapur higienis dengan proses terstandar
+              </li>
+              <li class="flex items-center gap-3">
+                <span
+                  class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-cream"
+                  >✓</span
+                >Kemasan rapi tahan panas
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div
+          data-slide
+          class="hidden grid items-center gap-8 md:grid-cols-12 lg:gap-12"
+        >
+          <div class="md:col-span-6">
+            <div
+              class="aspect-[4/3] overflow-hidden rounded-lg border-4 border-cream bg-stone-800"
+            >
+              <img
+                src="{{ url_for('static', filename='img/assets2.png') }}"
+                alt="Gratis Antar Batam"
+                class="h-full w-full object-cover"
+              />
+            </div>
+          </div>
+          <div class="md:col-span-6">
+            <span
+              class="mb-2 block text-xs font-bold uppercase tracking-widest text-cream"
+              >Layanan Antar</span
+            >
+            <h3
+              class="text-2xl font-extrabold leading-snug text-white sm:text-3xl lg:text-4xl"
+            >
+              Gratis Antar Batam
+            </h3>
+            <p class="mt-4 text-base leading-relaxed text-white/85 sm:text-lg">
+              Pesanan diantar tepat waktu ke lokasi acara Anda di seluruh
+              wilayah Kota Batam.
+            </p>
+            <ul class="mt-6 space-y-3 text-sm text-white/90">
+              <li class="flex items-center gap-3">
+                <span
+                  class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-cream"
+                  >✓</span
+                >Pengiriman sesuai jadwal acara
+              </li>
+              <li class="flex items-center gap-3">
+                <span
+                  class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-cream"
+                  >✓</span
+                >Hidangan tetap hangat sampai tujuan
+              </li>
+              <li class="flex items-center gap-3">
+                <span
+                  class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-cream"
+                  >✓</span
+                >Konsultasi menu gratis via WhatsApp
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <button
+        type="button"
+        data-next
+        aria-label="Slide berikutnya"
+        class="absolute -right-1 top-[35%] z-10 -translate-y-1/2 rounded-full bg-maroon-dark/60 p-1.5 text-cream transition hover:scale-110 sm:top-1/2 lg:-right-14 lg:bg-transparent lg:p-0"
+      >
+        <svg class="h-6 w-6 lg:h-12 lg:w-12" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 3v18l11-9z" />
+        </svg>
+      </button>
+      <div class="mt-10 flex items-center justify-center gap-2">
+        <button
+          type="button"
+          data-dot
+          aria-label="Slide 1"
+          class="h-2 rounded-full bg-white transition-all w-8"
+        ></button
+        ><button
+          type="button"
+          data-dot
+          aria-label="Slide 2"
+          class="h-2 rounded-full bg-white transition-all w-2.5 opacity-40"
+        ></button
+        ><button
+          type="button"
+          data-dot
+          aria-label="Slide 3"
+          class="h-2 rounded-full bg-white transition-all w-2.5 opacity-40"
+        ></button>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="paket" class="py-8 scroll-mt-24">
+  <div class="bg-cream shadow-2xl">
+    <div class="mx-auto w-full max-w-7xl px-6 py-8 sm:px-12 sm:py-12 lg:px-20 lg:py-16">
+      <div class="mx-auto mb-12 max-w-2xl text-center">
+        <h2 class="text-3xl font-extrabold sm:text-4xl text-maroon">
+          Paket Pilihan
+        </h2>
+        <p class="mt-3 text-base sm:text-lg text-maroon/80">
+          Tersedia Berbagai Menu Sesuai Selera Anda.
+        </p>
+      </div>
+      <div class="grid grid-cols-2 gap-4 sm:gap-8 lg:grid-cols-4">
+        <a
+          href="{{ url_for('main.produk', _anchor='katalog') }}"
+          class="group flex flex-col items-center text-center"
+        >
+          <div
+            class="aspect-square w-full overflow-hidden rounded-lg border border-maroon/10 bg-stone-200 shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-xl"
+          >
+            <img
+              src="{{ url_for('static', filename='img/assets4.png') }}"
+              alt="Sate Kambing"
+              loading="lazy"
+              class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            />
+          </div>
+          <h3 class="mt-3 text-base font-bold text-maroon sm:mt-5 sm:text-xl">Sate Kambing</h3>
+          <p class="mt-1 text-xs text-maroon/75 sm:text-sm">
+            Daging empuk dengan bumbu kacang & kecap lezat
+          </p></a
+        ><a
+          href="{{ url_for('main.produk', _anchor='katalog') }}"
+          class="group flex flex-col items-center text-center"
+        >
+          <div
+            class="aspect-square w-full overflow-hidden rounded-lg border border-maroon/10 bg-stone-200 shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-xl"
+          >
+            <img
+              src="{{ url_for('static', filename='img/assets2.png') }}"
+              alt="Nasi Kebuli"
+              loading="lazy"
+              class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            />
+          </div>
+          <h3 class="mt-3 text-base font-bold text-maroon sm:mt-5 sm:text-xl">Nasi Kebuli</h3>
+          <p class="mt-1 text-xs text-maroon/75 sm:text-sm">
+            Aroma rempah khas Timur Tengah, gurih kaya rasa
+          </p></a
+        ><a
+          href="{{ url_for('main.produk', _anchor='katalog') }}"
+          class="group flex flex-col items-center text-center"
+        >
+          <div
+            class="aspect-square w-full overflow-hidden rounded-lg border border-maroon/10 bg-stone-200 shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-xl"
+          >
+            <img
+              src="{{ url_for('static', filename='img/assets3.png') }}"
+              alt="Gulai Kambing"
+              loading="lazy"
+              class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            />
+          </div>
+          <h3 class="mt-3 text-base font-bold text-maroon sm:mt-5 sm:text-xl">Gulai Kambing</h3>
+          <p class="mt-1 text-xs text-maroon/75 sm:text-sm">
+            Kuah santan rempah kental tanpa bau prengus
+          </p></a
+        ><a
+          href="{{ url_for('main.produk', _anchor='katalog') }}"
+          class="group flex flex-col items-center text-center"
+        >
+          <div
+            class="aspect-square w-full overflow-hidden rounded-lg border border-maroon/10 bg-stone-200 shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-xl"
+          >
+            <img
+              src="{{ url_for('static', filename='img/assets1.png') }}"
+              alt="Kambing Guling"
+              loading="lazy"
+              class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            />
+          </div>
+          <h3 class="mt-3 text-base font-bold text-maroon sm:mt-5 sm:text-xl">Kambing Guling</h3>
+          <p class="mt-1 text-xs text-maroon/75 sm:text-sm">
+            Pilihan utama pesta & syukuran keluarga besar
+          </p></a
+        >
+      </div>
+      <div class="mt-12 text-center">
+        <a
+          href="{{ url_for('main.produk') }}"
+          class="inline-flex items-center justify-center gap-2 rounded-full bg-maroon px-7 py-3 text-sm font-semibold text-white shadow transition hover:bg-maroon-dark"
+          >Lihat Semua Produk</a
+        >
+      </div>
+    </div>
+  </div>
+</section>
+<section class="py-20 text-white">
+  <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20">
+    <div class="mx-auto max-w-5xl rounded-3xl bg-cream p-8 shadow-2xl sm:p-12 lg:p-16">
+    <div class="mx-auto mb-12 max-w-2xl text-center">
+      <span
+        class="mb-2 block text-xs font-extrabold uppercase tracking-widest text-maroon/70"
+        >Pelanggan Kami</span
+      >
+      <h2 class="text-3xl font-extrabold sm:text-4xl text-maroon">Testimoni</h2>
+      <p class="mt-3 text-base sm:text-lg text-maroon/80">
+        Kepuasan dan kebahagiaan para sohibul aqiqah dan pelanggan setia kami di
+        Batam.
+      </p>
+    </div>
+      <div class="grid items-center gap-8 rounded-2xl border border-gold/30 bg-maroon-dark mendung p-6 sm:p-10 lg:grid-cols-12 lg:gap-12">
+      <div class="lg:col-span-6">
+        <span
+          class="text-xs font-semibold uppercase tracking-wider text-cream/80"
+          >Ibu Amanda & Keluarga</span
+        >
+        <h3
+          class="mt-2 text-2xl font-extrabold leading-snug text-white sm:text-3xl"
+        >
+          “Kami sangat puas dengan produk dan kualitasnya”
+        </h3>
+        <p class="mt-4 text-xl" aria-label="Rating 5 bintang">
+          <span class="text-gold" aria-hidden="true">★★★★★</span>
+        </p>
+        <p class="mt-4 text-sm leading-relaxed text-white/85 sm:text-base">
+          Daging kambingnya sangat lembut, sama sekali tidak berbau prengus.
+          Bumbu sate dan nasi kebulinya luar biasa gurih. Tamu undangan syukuran
+          sangat terkesan. Sangat kami rekomendasikan untuk aqiqah di wilayah
+          Batam!
+        </p>
+      </div>
+      <div class="lg:col-span-6">
+        <div
+          class="aspect-[4/3] overflow-hidden rounded-lg border border-white/10 bg-stone-800 shadow-lg"
+        >
+          <img
+            src="{{ url_for('static', filename='img/assets1.png') }}"
+            alt="Jamuan makan bersama keluarga"
+            loading="lazy"
+            class="h-full w-full object-cover"
+          />
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "dashboard/base.html" %}
+{% set active = 'laporan' %}
+{% block title %}Laporan | Dashboard Catering Batam{% endblock %}
+{% block eyebrow %}Laporan • Oktober 2026{% endblock %}
+{% block heading %}Laporan{% endblock %}
+{% block content %}
+<!-- Ledger strip -->
+<section class="grid grid-cols-1 divide-y divide-maroon/15 rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] sm:grid-cols-3 sm:divide-x sm:divide-y-0 transition-shadow hover:shadow-md" aria-label="Ringkasan laporan">
+  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Omzet bulan ini</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">Rp 64,2 jt</p>
+    <p class="mt-1 text-xs font-bold text-maroon">▲ 9% vs September</p>
+  </div>
+  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Pesanan selesai</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">87</p>
+    <p class="mt-1 text-xs text-ink/60">12 aqiqah • 75 lainnya</p>
+  </div>
+  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Rata-rata / pesanan</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">Rp 738 rb</p>
+    <p class="mt-1 text-xs text-ink/60">Naik Rp 41 rb bulan lalu</p>
+  </div>
+</section>
+
+<section class="mt-4 grid gap-4 xl:grid-cols-12">
+  <!-- Omzet per kategori -->
+  <div class="rounded-xl border border-maroon/15 bg-white p-6 xl:col-span-7 transition-shadow hover:shadow-md">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark">Omzet per kategori</h2>
+      <span class="rounded-lg bg-cream px-3 py-1 text-xs font-bold text-maroon-dark">Oktober 2026</span>
+    </div>
+    <div class="mt-5 space-y-4 text-sm">
+      {% for nama, pct, rp in [('Prasmanan & Guling','62%','Rp 39,8 jt'),('Sate & Olahan','24%','Rp 15,4 jt'),('Nasi box (Kebuli/Mandhi)','14%','Rp 9,0 jt')] %}
+      <div>
+        <div class="flex items-baseline justify-between gap-3">
+          <span class="font-bold text-ink">{{ nama }}</span>
+          <span class="font-opsdisplay font-bold tabular-nums text-maroon-dark">{{ rp }}</span>
+        </div>
+        <div class="mt-2 h-3 overflow-hidden rounded-md border border-maroon/15 bg-cream" role="img" aria-label="{{ nama }} {{ pct }}">
+          <div class="h-full rounded-sm transition-all duration-500 ease-out {% if loop.index == 2 %}bg-gold{% else %}bg-maroon{% endif %}" style="width: {{ pct }}"></div>
+        </div>
+        <p class="mt-1 text-xs font-bold tabular-nums text-maroon/60">{{ pct }} dari total</p>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="mt-6 flex flex-wrap gap-2 border-t border-maroon/15 pt-5">
+      <button type="button" class="rounded-lg bg-maroon px-5 py-2.5 text-xs font-bold text-white hover:bg-maroon-dark shadow-sm transition-all duration-150">Unduh PDF</button>
+      <button type="button" class="rounded-lg border border-maroon/25 bg-white px-5 py-2.5 text-xs font-bold text-maroon hover:bg-cream transition-colors">Unduh Excel</button>
+    </div>
+  </div>
+
+  <!-- Kas dapur -->
+  <div class="xl:col-span-5 space-y-4">
+    <div class="rounded-xl border border-maroon/15 bg-maroon mendung p-6 text-cream transition-shadow hover:shadow-lg">
+      <p class="text-[11px] font-bold uppercase tracking-widest text-cream/70">Kas dapur minggu ini</p>
+      <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums">Rp 18,4 jt</p>
+      <dl class="mt-4 space-y-2 border-t border-cream/25 pt-4 text-sm">
+        <div class="flex justify-between gap-4"><dt class="text-cream/70">Belanja kambing (6 ekor)</dt><dd class="font-bold tabular-nums">Rp 9,1 jt</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-cream/70">Bumbu & beras</dt><dd class="font-bold tabular-nums">Rp 2,3 jt</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-cream/70">Antar & kemas</dt><dd class="font-bold tabular-nums">Rp 840 rb</dd></div>
+        <div class="flex justify-between gap-4 border-t border-cream/25 pt-2"><dt class="font-bold">Sisa kas</dt><dd class="font-opsdisplay font-bold tabular-nums text-gold">Rp 6,2 jt</dd></div>
+      </dl>
+    </div>
+    <div class="rounded-xl border border-maroon/15 bg-paper p-5 text-sm transition-shadow hover:shadow-md">
+      <h3 class="font-opsdisplay font-bold text-maroon-dark">Catatan juru masak</h3>
+      <p class="mt-1 leading-relaxed text-ink/70">Prasmanan menyumbang 62% omzet. Stok guling menipis — jadwalkan kulakan sebelum Jumat.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Tentang Kami | Catering Batam{% endblock %}
+{% block description %}Tentang Catering Batam: sejarah, visi misi, dan tim kami yang berdedikasi melayani aqiqah dan syukuran keluarga di Batam sejak 2015.{% endblock %}
+{% block content %}
+<section id="tentang" class="relative z-10 scroll-mt-24 bg-cream">
+  <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20 py-14 lg:py-20">
+    <div class="mx-auto mb-12 max-w-3xl text-center">
+      <span class="mb-2 block text-xs font-extrabold uppercase tracking-widest text-maroon/70">Tentang Kami</span>
+      <h1 class="text-4xl font-extrabold leading-tight text-maroon sm:text-5xl lg:text-6xl">Sejarah &amp; Visi Kami</h1>
+    </div>
+    <div class="grid gap-8 lg:grid-cols-2 items-center">
+      <div class="prose prose-maroon max-w-none">
+        <p class="text-base leading-relaxed text-maroon/90 sm:text-lg">
+          <strong>Catering Batam</strong> lahir pada 2015 dari keinginan sederhana: memastikan setiap keluarga di Batam dapat menyelenggarakan aqiqah dan syukuran dengan lancar, halal, dan penuh kehangatan — tanpa repot mengurus belanja, masak, dan antar.
+        </p>
+        <p class="mt-4 text-base leading-relaxed text-maroon/90 sm:text-lg">
+          Kami mulai dari dapur kecil di Batam Centre dengan satu kuali sate dan satu kompor guling. Saat ini, tim kami telah melayani lebih dari <strong>5.000 acara aqiqah</strong> dan syukuran di seluruh wilayah Kota Batam — dari Batam Centre, Bengkong, Batu Aji, hingga Nongsa.
+        </p>
+        <p class="mt-4 text-base leading-relaxed text-maroon/90 sm:text-lg">
+          Setiap kambing yang kami olah dipilih langsung dari peternak terpercaya: sehat, cukup umur, dan bebas cacat. Penyembelihan dilakukan oleh penyembelih bersertifikat yang menyebut nama sohibul aqiqah, sesuai syariat. Daging diolah di dapur higienis standar HACCP, dikemas rapi dalam kotak tahan panas, dan diantar tepat waktu ke lokasi acara.
+        </p>
+      </div>
+      <div class="aspect-[4/3] overflow-hidden rounded-2xl border-4 border-gold/30 bg-stone-200">
+        <img src="{{ url_for('static', filename='img/goat.png') }}" alt="Tim Catering Batam mempersiapkan hidangan aqiqah" loading="lazy" class="h-full w-full object-cover" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="visi-misi" class="scroll-mt-24 py-16 bg-maroon text-white">
+  <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20">
+    <div class="mx-auto mb-12 max-w-2xl text-center">
+      <h2 class="text-3xl font-extrabold sm:text-4xl">Visi &amp; Misi</h2>
+      <p class="mt-3 text-base sm:text-lg text-white/80">Landasan setiap keputusan kami di dapur dan di lapangan.</p>
+    </div>
+    <div class="grid gap-6 md:grid-cols-2">
+      <article class="rounded-2xl border border-cream/30 bg-cream p-6 sm:p-8 transition-shadow hover:shadow-xl">
+        <div class="flex items-center gap-3">
+          <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gold text-maroon-dark text-2xl font-bold" aria-hidden="true">1</span>
+          <h3 class="font-opsdisplay text-xl font-bold text-maroon-dark">Visi</h3>
+        </div>
+        <p class="mt-4 text-base leading-relaxed text-maroon">Menjadi mitra catering aqiqah terpercaya nomor satu di Kepulauan Riau, yang dikenal kejujuran prosesnya, kelezatan masakannya, dan kehangatan pelayanannya.</p>
+      </article>
+      <article class="rounded-2xl border border-cream/30 bg-cream p-6 sm:p-8 transition-shadow hover:shadow-xl">
+        <div class="flex items-center gap-3">
+          <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gold text-maroon-dark text-2xl font-bold" aria-hidden="true">2</span>
+          <h3 class="font-opsdisplay text-xl font-bold text-maroon-dark">Misi</h3>
+        </div>
+        <ul class="mt-4 space-y-3 text-sm text-maroon/70">
+          <li class="flex items-start gap-3"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold text-maroon-dark text-xs font-bold mt-0.5">✓</span>Menyediakan hewan qurban aqiqah yang syar'i, sehat, dan berkualitas</li>
+          <li class="flex items-start gap-3"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold text-maroon-dark text-xs font-bold mt-0.5">✓</span>Menghadirkan hidangan khas rempah Batam dengan cita rasa autentik</li>
+          <li class="flex items-start gap-3"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold text-maroon-dark text-xs font-bold mt-0.5">✓</span>Memberikan dokumentasi transparan: foto, video, dan sertifikat bernama anak</li>
+          <li class="flex items-start gap-3"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold text-maroon-dark text-xs font-bold mt-0.5">✓</span>Mengantar tepat waktu ke seluruh wilayah Batam tanpa biaya tambahan</li>
+          <li class="flex items-start gap-3"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold text-maroon-dark text-xs font-bold mt-0.5">✓</span>Membangun hubungan jangka panjang dengan setiap keluarga yang kami layani</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="tim" class="scroll-mt-24 py-16 bg-cream">
+  <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20">
+    <div class="mx-auto mb-12 max-w-2xl text-center">
+      <h2 class="text-3xl font-extrabold sm:text-4xl text-maroon">Tim Dapur &amp; Lapangan</h2>
+      <p class="mt-3 text-base sm:text-lg text-maroon/80">Wajah-wajah di balik setiap hidangan yang kami sajikan.</p>
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {% for nama, peran, bio, inisial in [
+        ('Pak Haji Rohman', 'Kepala Dapur & Penyembelih', '30 tahun pengalaman menyembelih & memasak kambing. Merekam setiap nama sohibul dalam hati.', 'HR'),
+        ('Bu Siti', 'Koordinator Masak & Resep', 'Pewaris resep kebuli & gulai turun-temurun. Jaminan rasa konsisten setiap porsi.', 'BS'),
+        ('Pak Budi', 'Koordinator Antar & Logistik', 'Mengatur rute antar ke 7 kecamatan Batam. Hidangan selalu tiba hangat & tepat waktu.', 'PB'),
+        ('Mbak Rina', 'Admin & Dokumentasi', 'Mengurus sertifikat, foto, video, dan koordinasi WhatsApp dengan sohibul.', 'MR'),
+      ] %}
+      <article class="group rounded-2xl border border-maroon/20 bg-white p-6 text-center shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-maroon/40">
+        <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-2xl bg-maroon font-opsdisplay text-2xl font-bold text-cream">{{ inisial }}</div>
+        <h3 class="mt-4 font-opsdisplay font-bold text-maroon-dark">{{ nama }}</h3>
+        <p class="mt-1 text-xs font-semibold text-gold">{{ peran }}</p>
+        <p class="mt-3 text-sm leading-relaxed text-maroon/70">{{ bio }}</p>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="nilai" class="scroll-mt-24 py-16 bg-maroon text-white">
+  <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20">
+    <div class="mx-auto mb-12 max-w-2xl text-center">
+      <h2 class="text-3xl font-extrabold sm:text-4xl">Nilai-Nilai Kami</h2>
+      <p class="mt-3 text-base sm:text-lg text-white/80">Prinsip yang tidak pernah kami tawar.</p>
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {% for icon_svg, judul, deskripsi in [
+        ('<svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/><path d="M12 7v10"/><path d="M7 12h10"/></svg>', 'Syar\'i & Jujur', 'Hewan cukup umur, sehat, bebas cacat. Penyembelihan menyebut nama sohibul. Tidak ada pintas.'),
+        ('<svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>', 'Rasa Otentik', 'Bumbu rempah khas Batam & Timur Tengah yang diwariskan generasi. Tanpa MSG berlebihan, rasa alami.'),
+        ('<svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>', 'Transparan', 'Setiap acara didokumentasi foto & video berlabel nama anak. Sertifikat aqiqah otomatis dicetak.'),
+        ('<svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M18 22V12"/><path d="M22 16H14"/><path d="M6 22V7.75a1.25 1.25 0 0 1 2.5 0V22"/><path d="M10 11.5H2"/></svg>', 'Keluarga', 'Kami bukan vendor — kami bagian dari syukuran Anda. Konsultasi gratis, antar gratis, hati terbuka.'),
+      ] %}
+      <article class="rounded-2xl border border-cream/30 bg-cream p-6 text-center transition-shadow hover:shadow-xl">
+        <span class="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-gold text-maroon-dark mb-3" aria-hidden="true">{{ icon_svg | safe }}</span>
+        <h3 class="font-opsdisplay font-bold text-maroon-dark">{{ judul }}</h3>
+        <p class="mt-2 text-sm leading-relaxed text-maroon/70">{{ deskripsi }}</p>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="py-20 bg-cream">
+  <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20">
+    <div class="mx-auto max-w-3xl rounded-3xl bg-maroon mendung p-8 text-center sm:p-12 lg:p-16">
+      <span class="mb-2 block text-xs font-bold uppercase tracking-widest text-gold">Siap Memulai Syukuran?</span>
+      <h2 class="text-3xl font-extrabold text-white sm:text-4xl">Kami Siap Melayani Acara Keluarga Anda</h2>
+      <p class="mt-4 text-base leading-relaxed text-white/85 sm:text-lg">Konsultasi menu, estimasi biaya, dan jadwal sembelih — gratis & tanpa komitmen.</p>
+      <div class="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+        <a href="{{ url_for('main.produk') }}" class="inline-flex items-center justify-center gap-2 rounded-full bg-cream px-8 py-3 text-sm font-semibold text-maroon shadow transition hover:bg-white">Lihat Paket Aqiqah</a>
+        <a href="https://wa.me/628126999825" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-full border-2 border-cream px-8 py-3 text-sm font-semibold text-white transition hover:bg-cream hover:text-maroon">Chat WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

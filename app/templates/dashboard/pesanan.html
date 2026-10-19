@@ -1,0 +1,101 @@
+{% extends "dashboard/base.html" %}
+{% set active = 'pesanan' %}
+{% block title %}Pesanan | Dashboard Catering Batam{% endblock %}
+{% block eyebrow %}Pesanan • 23 aktif{% endblock %}
+{% block heading %}Pesanan{% endblock %}
+{% block subheader %}
+<div class="flex gap-2 overflow-x-auto px-4 pb-3 sm:px-6 lg:px-8" data-status-filter>
+  {% for s in ['Semua','Baru','Diproses','Diantar','Selesai','Batal'] %}
+  <button type="button" data-filter="{{ s }}" class="shrink-0 rounded-lg px-4 py-1.5 text-xs font-bold transition-all duration-150 {% if s=='Semua' %}bg-maroon text-white shadow-sm{% else %}bg-white text-maroon ring-1 ring-maroon/15 hover:bg-cream hover:ring-maroon/30{% endif %}">{{ s }}</button>
+  {% endfor %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] shadow-sm transition-shadow hover:shadow-md">
+  <div class="flex items-center justify-between p-4 border-b border-maroon/10 bg-cream/50">
+    <span class="w-1.5 shrink-0 bg-maroon rounded-tl-xl" aria-hidden="true"></span>
+    <h2 class="sr-only">Daftar pesanan</h2>
+  </div>
+  <div class="min-w-0 flex-1">
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[820px] text-left text-sm tabular-nums">
+        <thead>
+          <tr class="border-b border-maroon/10 text-xs uppercase tracking-wide text-maroon/60">
+            <th class="px-5 py-3">ID</th>
+            <th class="px-3 py-3">Sohibul / Nama anak</th>
+            <th class="hidden px-3 py-3 md:table-cell">Menu</th>
+            <th class="hidden px-3 py-3 lg:table-cell">Tgl acara</th>
+            <th class="px-3 py-3">Total</th>
+            <th class="px-3 py-3">Status</th>
+            <th class="px-5 py-3 text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-maroon/10" data-order-rows>
+          {% for o in [
+            ('#AQ-1042','Rina / Ahmad Zaidan','Prasmanan 150 pax','18 Okt','Rp 2.750.000','Baru'),
+            ('#AQ-1041','Amanda / Bilal','Sate 100 tusuk + Kebuli','14 Okt','Rp 614.000','Diproses'),
+            ('#AQ-1040','H. Mahmud / —','Guling 1 ekor','13 Okt','Rp 2.450.000','Diantar'),
+            ('#AQ-1039','Dewi / Khadijah','Bento 60 box','12 Okt','Rp 1.200.000','Selesai'),
+            ('#AQ-1038','Andi / Yusuf','Gulai + Sate','11 Okt','Rp 890.000','Selesai'),
+            ('#AQ-1037','Sari / Maryam','Kebuli 40 box','10 Okt','Rp 1.600.000','Batal'),
+          ] %}
+          <tr data-status="{{ o[5] }}" class="hover:bg-cream/50 transition-colors">
+            <td class="px-5 py-3 font-extrabold text-maroon">{{ o[0] }}</td>
+            <td class="px-3 py-3"><p class="font-semibold text-ink">{{ o[1] }}</p><p class="text-xs text-ink/60 md:hidden">{{ o[2] }} • {{ o[3] }}</p></td>
+            <td class="hidden px-3 py-3 text-ink/60 md:table-cell">{{ o[2] }}</td>
+            <td class="hidden px-3 py-3 lg:table-cell">{{ o[3] }}</td>
+            <td class="whitespace-nowrap px-3 py-3 font-bold">{{ o[4] }}</td>
+            <td class="px-3 py-3">
+              {% if o[5]=='Baru' %}<span class="rounded-full bg-gold/20 px-3 py-1 text-xs font-bold text-amber-800">Baru</span>
+              {% elif o[5]=='Diproses' %}<span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">Diproses</span>
+              {% elif o[5]=='Diantar' %}<span class="rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-700">Diantar</span>
+              {% elif o[5]=='Selesai' %}<span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Selesai</span>
+              {% else %}<span class="rounded-full bg-stone-200 px-3 py-1 text-xs font-bold text-stone-600">Batal</span>{% endif %}
+            </td>
+            <td class="px-5 py-3"><div class="flex justify-end gap-2">
+              <button type="button" class="rounded-md bg-maroon px-3 py-1.5 text-xs font-bold text-white hover:bg-maroon-dark transition-colors">Detail</button>
+              <button type="button" class="hidden rounded-md border border-maroon/20 px-3 py-1.5 text-xs font-bold text-maroon hover:bg-cream transition-colors sm:block">WA</button>
+            </div></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p data-empty class="hidden px-6 py-8 text-center text-sm text-ink/60">Tidak ada pesanan dengan status ini. Coba filter lain.</p>
+  </div>
+</section>
+
+<!-- Detail contoh (kolom aqiqah) -->
+<section class="mt-6 grid gap-6 xl:grid-cols-12">
+  <div class="flex overflow-hidden rounded-xl border border-maroon-dark bg-maroon shadow-sm xl:col-span-5 transition-shadow hover:shadow-lg">
+    <span class="w-1.5 shrink-0 bg-gold" aria-hidden="true"></span>
+    <div class="mendung min-w-0 flex-1 p-6 text-white">
+      <h2 class="font-opsdisplay font-bold">Detail #AQ-1042</h2>
+      <div class="my-4 border-t border-dashed border-white/25" aria-hidden="true"></div>
+      <dl class="space-y-2 text-sm tabular-nums">
+        <div class="flex justify-between gap-4"><dt class="text-white/70">Sohibul</dt><dd class="font-semibold">Ibu Rina (0812-xxxx)</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-white/70">Nama anak</dt><dd class="font-semibold">Ahmad Zaidan</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-white/70">Akad / sembelih</dt><dd class="font-semibold">18 Okt, 07.00</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-white/70">Alamat antar</dt><dd class="text-right font-semibold">Bengkong, Batam</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-white/70">Dokumentasi</dt><dd class="rounded-full bg-gold px-2 py-0.5 text-xs font-bold text-maroon-dark">Belum difoto</dd></div>
+      </dl>
+      <div class="mt-5 flex flex-wrap gap-2">
+        <button class="rounded-md bg-cream px-4 py-2 text-xs font-bold text-maroon hover:bg-white transition-colors">Konfirmasi</button>
+        <button class="rounded-md bg-white/15 px-4 py-2 text-xs font-bold hover:bg-white/25 transition-colors">Cetak sertifikat</button>
+      </div>
+    </div>
+  </div>
+  <div class="rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] p-6 shadow-sm xl:col-span-7 transition-shadow hover:shadow-md">
+    <h2 class="font-opsdisplay font-bold text-maroon-dark">Alur aqiqah</h2>
+    <div class="my-4 border-t border-dashed border-maroon/20" aria-hidden="true"></div>
+    <ol class="space-y-0">
+      {% for t, d, done in [('Pesanan masuk','DP Rp 500 rb via QRIS',1),('Sembelih atas nama','Jadwal 18 Okt 07.00',1),('Masak & kemas','Sate + kebuli, 80 box',0),('Antar + dokumentasi','Foto + video + sertifikat',0)] %}
+      <li class="flex gap-3">
+        <div class="flex flex-col items-center"><span class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 {% if done %}bg-maroon text-white{% else %}bg-cream text-maroon/50 ring-1 ring-maroon/20{% endif %}">{% if done %}✓{% else %}•{% endif %}</span>{% if not loop.last %}<span class="w-0.5 flex-1 bg-maroon/15"></span>{% endif %}</div>
+        <div class="pb-5"><p class="text-sm font-bold text-maroon-dark">{{ t }}</p><p class="text-xs tabular-nums text-ink/60">{{ d }}</p></div>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+{% endblock %}

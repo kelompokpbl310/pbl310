@@ -1,0 +1,76 @@
+{% extends "dashboard/base.html" %}
+{% set active = 'pelanggan' %}
+{% block title %}Pelanggan | Dashboard Catering Batam{% endblock %}
+{% block eyebrow %}Pelanggan • 412 total{% endblock %}
+{% block heading %}Pelanggan{% endblock %}
+{% block content %}
+<!-- Ledger strip -->
+<section class="grid grid-cols-1 divide-y divide-maroon/15 rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] sm:grid-cols-3 sm:divide-x sm:divide-y-0 transition-shadow hover:shadow-md" aria-label="Ringkasan pelanggan">
+  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Pelanggan baru • 30 hari</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">28</p>
+    <p class="mt-1 text-xs text-ink/60">Banyak dari rujukan aqiqah</p>
+  </div>
+  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Repeat order</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">63%</p>
+    <p class="mt-1 text-xs text-ink/60">Pesan ≥ 2 kali setahun</p>
+  </div>
+  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Wilayah terbanyak</p>
+    <p class="mt-1 font-opsdisplay text-2xl font-bold text-maroon-dark">Batam Centre</p>
+    <p class="mt-1 text-xs text-ink/60">138 KK • antar tiap pekan</p>
+  </div>
+</section>
+
+<!-- Toolbar -->
+<div class="mt-4 flex flex-wrap items-center gap-2">
+  <label class="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-maroon/15 bg-white px-4 py-2 text-sm sm:max-w-xs transition-all duration-150 focus-within:ring-2 focus-within:ring-gold/40 focus-within:border-gold">
+    <span aria-hidden="true" class="text-maroon/60">⌕</span>
+    <input type="search" placeholder="Cari nama / no. WA…" class="w-full bg-transparent outline-none placeholder:text-ink/40" />
+  </label>
+  <div class="ml-auto flex gap-2">
+    <button type="button" class="rounded-lg border border-maroon/25 bg-white px-4 py-2 text-xs font-bold text-maroon hover:bg-cream transition-colors">Unduh data</button>
+    <button type="button" class="rounded-lg bg-maroon px-4 py-2 text-xs font-bold text-white hover:bg-maroon-dark shadow-sm transition-all duration-150">+ Tambah pelanggan</button>
+  </div>
+</div>
+
+<!-- Tabel pelanggan -->
+<section class="mt-4 overflow-hidden rounded-xl border border-maroon/15 bg-white transition-shadow hover:shadow-md">
+  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-maroon/15 bg-paper px-5 py-3">
+    <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark">Buku pelanggan dapur</h2>
+    <span class="rounded-lg bg-cream px-3 py-1 text-xs font-bold text-maroon-dark">4 ditampilkan</span>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[680px] text-left text-sm">
+      <thead>
+        <tr class="border-b border-maroon/15 text-[11px] uppercase tracking-widest text-maroon/60">
+          <th class="px-5 py-3">Nama</th>
+          <th class="px-3 py-3">Kontak</th>
+          <th class="hidden px-3 py-3 sm:table-cell">Acara terakhir</th>
+          <th class="px-5 py-3 text-right">Total belanja</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-maroon/10">
+        {% for n, k, a, t in [('Ibu Amanda','0812-699-xxxx','Prasmanan 150 pax','Rp 4,2 jt'),('Ibu Rina','0821-7xxx-xxxx','Aqiqah 2 kambing','Rp 2,7 jt'),('H. Mahmud','0813-7xxx-xxxx','Guling 1 ekor','Rp 2,4 jt'),('Dewi Lestari','0852-7xxx-xxxx','Bento 60 box','Rp 1,2 jt')] %}
+        <tr class="hover:bg-cream/50 transition-colors">
+          <td class="px-5 py-3">
+            <span class="flex items-center gap-3">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-maroon font-opsdisplay text-sm font-bold text-cream" aria-hidden="true">{{ n[4] }}</span>
+              <span class="font-bold text-ink">{{ n }}</span>
+            </span>
+          </td>
+          <td class="px-3 py-3 tabular-nums text-ink/70">{{ k }}</td>
+          <td class="hidden px-3 py-3 text-ink/70 sm:table-cell">{{ a }}</td>
+          <td class="px-5 py-3 text-right font-bold tabular-nums text-maroon-dark">{{ t }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="flex flex-wrap items-center justify-between gap-2 border-t border-maroon/15 px-5 py-3 text-xs text-ink/60">
+    <p>Catat no. WA aktif agar undangan syukuran terkirim.</p>
+    <p class="font-bold text-maroon">Halaman 1 / 103</p>
+  </div>
+</section>
+{% endblock %}
