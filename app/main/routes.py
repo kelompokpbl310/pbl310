@@ -1,9 +1,14 @@
 """Main Routes - Public Pages"""
 
-from flask import render_template, url_for
+from flask import render_template, url_for, request, redirect, flash
+from flask_login import login_required, current_user
 from app.main import bp
 from app import db
-from app.models import Product
+from app.models import Product, User
+from werkzeug.utils import secure_filename
+from PIL import Image
+import os
+import uuid
 
 
 # Promo slides data (static for now)
@@ -68,3 +73,161 @@ def checkout():
 @bp.route('/tentang')
 def tentang():
     return render_template('tentang.html')
+
+
+# --- User Profile Routes ---
+
+UPLOAD_FOLDER = 'app/static/uploads/avatars'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
+MAX_FILE_SIZE = 2 * 1024 * 1024  # 2MB
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@bp.route('/profil')
+@login_required
+def profil():
+    """Akun tab - Profile info + photo upload"""
+    return render_template('profil/akun.html')
+
+
+@bp.route('/profil', methods=['POST'])
+@login_required
+def profil_update():
+    fullname = request.form.get('fullname', '').strip()
+    email = request.form.get('email', '').strip()
+    phone = request.form.get('phone', '').strip()
+
+    if not fullname:
+        flash('Nama lengkap wajib diisi.', 'error')
+        return redirect(url_for('main.profil'))
+
+    if not email:
+        flash('Email wajib diisi.', 'error')
+        return redirect(url_for('main.profil'))
+
+    # Check email uniqueness (excluding current user)
+    existing = User.query.filter(User.email == email, User.id != current_user.id).first()
+    if existing:
+        flash('Email sudah terdaftar.', 'error')
+        return redirect(url_for('main.profil'))
+
+    current_user.fullname = fullname
+    current_user.email = email
+    current_user.phone = phone if phone else None
+
+    db.session.commit()
+    flash('Profil berhasil diperbarui.', 'success')
+    return redirect(url_for('main.profil'))
+
+
+@bp.route('/profil/photo', methods=['POST'])
+@login_required
+def profil_photo():
+    if 'avatar' not in request.files:
+        flash('Tidak ada file yang diunggah.', 'error')
+        return redirect(url_for('main.profil'))
+
+    file = request.files['avatar']
+    if file.filename == '':
+        flash('Tidak ada file yang dipilih.', 'error')
+        return redirect(url_for('main.profil'))
+
+    if not allowed_file(file.filename):
+        flash('Format file tidak didukung. Gunakan PNG, JPG, atau WebP.', 'error')
+        return redirect(url_for('main.profil'))
+
+    # Check file size
+    file.seek(0, os.SEEK_END)
+    file_length = file.tell()
+    file.seek(0)
+    if file_length > MAX_FILE_SIZE:
+        flash('Ukuran file maksimal 2MB.', 'error')
+        return redirect(url_for('main.profil'))
+
+    try:
+        # Process image with Pillow
+        img = Image.open(file.stream)
+        img.verify()  # Verify it's a valid image
+        file.seek(0)
+        img = Image.open(file.stream)
+
+        # Convert to RGB if needed (for WebP)
+        if img.mode in ('RGBA', 'LA', 'P'):
+            # Create white background
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            if img.mode == 'P':
+                img = img.convert('RGBA')
+            background.paste(img, mask=img.split()[-1] if img.mode in ('RGBA', 'LA') else None)
+            img = background
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        # Resize to square (crop center)
+        size = min(img.size)
+        left = (img.width - size) // 2
+        top = (img.height - size) // 2
+        img = img.crop((left, top, left + size, top + size))
+        img = img.resize((256, 256), Image.Resampling.LANCZOS)
+
+        # Generate unique filename
+        ext = 'webp'
+        filename = f'user_{current_user.id}_{uuid.uuid4().hex[:8]}.{ext}'
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+
+        # Ensure upload directory exists
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+        # Save as WebP
+        img.save(filepath, 'WEBP', quality=85, optimize=True)
+
+        # Update user avatar
+        current_user.avatar = f'uploads/avatars/{filename}'
+        db.session.commit()
+
+        flash('Foto profil berhasil diubah.', 'success')
+    except Exception as e:
+        flash('Gagal memproses gambar. Pastikan file adalah gambar valid.', 'error')
+
+    return redirect(url_for('main.profil'))
+
+
+@bp.route('/profil/keamanan')
+@login_required
+def profil_keamanan():
+    """Keamanan tab - Password change"""
+    return render_template('profil/keamanan.html')
+
+
+@bp.route('/profil/password', methods=['POST'])
+@login_required
+def profil_password():
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+
+    if not current_user.check_password(current_password):
+        flash('Password saat ini salah.', 'error')
+        return redirect(url_for('main.profil_keamanan'))
+
+    if len(new_password) < 8:
+        flash('Password baru minimal 8 karakter.', 'error')
+        return redirect(url_for('main.profil_keamanan'))
+
+    if new_password != confirm_password:
+        flash('Konfirmasi password tidak cocok.', 'error')
+        return redirect(url_for('main.profil_keamanan'))
+
+    current_user.set_password(new_password)
+    db.session.commit()
+    flash('Password berhasil diubah.', 'success')
+    return redirect(url_for('main.profil_keamanan'))
+
+
+@bp.route('/profil/riwayat')
+@login_required
+def profil_riwayat():
+    """Riwayat Pesanan tab - Order history"""
+    return render_template('profil/riwayat.html')

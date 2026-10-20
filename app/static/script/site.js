@@ -341,6 +341,41 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Avatar preview on file select
+  $("[data-avatar-input]")?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const preview = $("#avatar-preview");
+      if (preview) {
+        preview.innerHTML = `<img src="${ev.target.result}" alt="Preview" class="h-full w-full object-cover" />`;
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Password strength meter
+  const pwInput = $("#new_password");
+  const pwBar = $("#password-strength-fill");
+  const pwText = $("#password-strength-text");
+  if (pwInput && pwBar && pwText) {
+    pwInput.addEventListener('input', () => {
+      const val = pwInput.value;
+      let score = 0;
+      if (val.length >= 8) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[a-z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      const pct = (score / 5) * 100;
+      pwBar.style.width = pct + '%';
+      pwBar.style.backgroundColor = score <= 2 ? '#f87171' : score <= 3 ? '#fbbf24' : '#34d399';
+      const labels = ['Sangat lemah', 'Lemah', 'Sedang', 'Kuat', 'Sangat kuat'];
+      pwText.textContent = labels[score - 1] || 'Minimal 8 karakter';
+    });
+  }
+
   // Flash message auto-dismiss
   $$("[data-flash]").forEach((el) => {
     const delay = Number(el.dataset.flash) || 5000;

@@ -53,15 +53,15 @@
         <nav
           class="flex-1 space-y-1 overflow-y-auto py-4 text-sm font-semibold"
         >
-          {% set nav = [ ('dashboard', 'Ringkasan', '/dashboard', '◉'),
-          ('pesanan', 'Pesanan', '/dashboard/pesanan', '▤'), ('produk', 'Produk
-          & Paket', '/dashboard/produk', '▦'), ('pelanggan', 'Pelanggan',
-          '/dashboard/pelanggan', '○'), ('laporan', 'Laporan',
-          '/dashboard/laporan', '▥'), ('ulasan', 'Ulasan', '/dashboard/ulasan',
-          '★'), ('pengaturan', 'Pengaturan', '/dashboard/pengaturan', '⚙'), ] %}
-          {% for key, label, href, icon in nav %}
+          {% set nav = [ ('dashboard', 'Ringkasan', 'admin.dashboard', '◉'),
+          ('pesanan', 'Pesanan', 'admin.pesanan', '▤'), ('produk', 'Produk
+          & Paket', 'admin.produk', '▦'), ('pelanggan', 'Pelanggan',
+          'admin.pelanggan', '○'), ('laporan', 'Laporan',
+          'admin.laporan', '▥'), ('ulasan', 'Ulasan', 'admin.ulasan',
+          '★'), ('pengaturan', 'Pengaturan', 'admin.pengaturan', '⚙'), ] %}
+          {% for key, label, endpoint, icon in nav %}
           <a
-            href="{{ href }}"
+            href="{{ url_for(endpoint) }}"
             class="flex items-center gap-3 border-l-4 py-2.5 pl-4 pr-4 transition-all duration-150 {% if active == key %}border-gold bg-white/10 text-white{% else %}border-transparent text-cream/70 hover:border-cream/30 hover:bg-white/5 hover:text-white{% endif %}"
             {% if active == key %}aria-current="page"{% endif %}
           >

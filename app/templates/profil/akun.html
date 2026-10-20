@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Akun Saya | Catering Batam{% endblock %}
+{% block description %}Kelola informasi akun dan foto profil Anda.{% endblock %}
+{% block content %}
+<!-- Side Panel Layout (VS Code / GitHub style) -->
+<div class="min-h-screen bg-cream scroll-mt-24">
+  <div class="lg:flex">
+    {% set active_tab = 'akun' %}
+    {% include 'profil/sidebar.html' %}
+    
+    <!-- Main Content -->
+    <main class="lg:flex-1 min-h-screen">
+      <section class="py-8 bg-cream min-h-screen">
+        <div class="w-full max-w-4xl px-6 sm:px-12 lg:px-20">
+          <div class="p-6 sm:p-8 lg:p-10">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <div class="space-y-2 mb-6" data-flash="5000">
+                {% for category, message in messages %}
+                  <div class="rounded-xl px-3 py-2 text-sm font-medium
+                    {% if category == 'success' %}bg-emerald-500/20 border border-emerald-500/30 text-emerald-400
+                    {% elif category == 'error' %}bg-amber-500/20 border border-amber-500/30 text-amber-400
+                    {% else %}bg-blue-500/20 border border-blue-500/30 text-blue-400{% endif %}">
+                    {{ message }}
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endwith %}
+
+          {% include 'profil/mobile_nav.html' %}
+
+          <!-- AKUN CONTENT -->
+          <section class="space-y-4" aria-labelledby="akun-label">
+            <h3 id="akun-label" class="font-opsdisplay text-lg font-bold text-maroon-dark">Akun</h3>
+            <p class="text-sm text-ink/60">Kelola informasi akun dan foto profil Anda.</p>
+
+            <!-- Foto Profil Section -->
+            <form method="POST" action="{{ url_for('main.profil_photo') }}" enctype="multipart/form-data" class="space-y-4 rounded-xl border border-maroon/15 bg-white p-6 transition-shadow hover:shadow-md">
+              <h4 class="font-bold text-maroon">Foto Profil</h4>
+              <p class="text-sm text-ink/60">Format: PNG, JPG, WebP. Maksimal 2MB. Akan dipotong persegi dan dikonversi ke WebP.</p>
+              <div class="flex items-center gap-4">
+                <div class="relative h-24 w-24 shrink-0 rounded-full overflow-hidden border-2 border-maroon bg-cream" id="avatar-preview">
+                  {% if current_user.avatar %}
+                    <img src="{{ url_for('static', filename=current_user.avatar) }}" alt="Preview" class="h-full w-full object-cover" />
+                  {% else %}
+                    <span class="flex h-full w-full items-center justify-center rounded-full bg-cream text-maroon font-bold text-3xl">
+                      {{ current_user.fullname[0].upper() }}
+                    </span>
+                  {% endif %}
+                </div>
+                <div class="flex-1">
+                  <label for="avatar-file" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Pilih Foto</label>
+                  <input id="avatar-file" name="avatar" type="file" accept="image/png,image/jpeg,image/webp" required class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+                  <p class="mt-1 text-xs text-ink/60">PNG, JPG, WebP • Maks 2MB • Akan dipotong persegi</p>
+                </div>
+              </div>
+              <button type="submit" class="w-full rounded-lg bg-maroon py-3 text-sm font-bold text-white hover:bg-maroon-dark shadow-sm transition-all duration-150">Unggah & Simpan Foto</button>
+            </form>
+
+            <!-- Info Akun Section -->
+            <form method="POST" action="{{ url_for('main.profil_update') }}" class="space-y-4 rounded-xl border border-maroon/15 bg-white p-6 transition-shadow hover:shadow-md">
+              <h4 class="font-bold text-maroon">Informasi Akun</h4>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label for="fullname" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Nama Lengkap</label>
+                  <input id="fullname" name="fullname" type="text" value="{{ current_user.fullname }}" required class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm font-semibold normal-case tracking-normal text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+                </div>
+                <div>
+                  <label for="username" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Username</label>
+                  <input id="username" type="text" value="{{ current_user.username }}" disabled class="mt-1 w-full rounded-lg border border-maroon/20 bg-stone-50 px-4 py-2.5 text-sm text-ink/50 cursor-not-allowed" />
+                  <p class="mt-1 text-xs text-ink/50">Username tidak bisa diubah.</p>
+                </div>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label for="email" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Email</label>
+                  <input id="email" name="email" type="email" value="{{ current_user.email }}" required class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm font-semibold normal-case tracking-normal text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+                </div>
+                <div>
+                  <label for="phone" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Nomor Telepon</label>
+                  <input id="phone" name="phone" type="tel" value="{{ current_user.phone or '' }}" placeholder="Contoh: +62 8xx xxx xxxx" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+                </div>
+              </div>
+              <button type="submit" class="w-full rounded-lg bg-maroon py-3 text-sm font-bold text-white hover:bg-maroon-dark shadow-sm transition-all duration-150">Simpan Perubahan</button>
+            </form>
+          </section>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

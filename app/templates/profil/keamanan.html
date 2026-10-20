@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Keamanan | Catering Batam{% endblock %}
+{% block description %}Ubah password Anda untuk keamanan akun.{% endblock %}
+{% block content %}
+<!-- Side Panel Layout (VS Code / GitHub style) -->
+<div class="min-h-screen bg-cream scroll-mt-24">
+  <div class="lg:flex">
+    {% set active_tab = 'keamanan' %}
+    {% include 'profil/sidebar.html' %}
+    
+    <!-- Main Content -->
+    <main class="lg:flex-1 min-h-screen">
+      <section class="py-8 bg-cream min-h-screen">
+        <div class="w-full max-w-4xl px-6 sm:px-12 lg:px-20">
+          <div class="p-6 sm:p-8 lg:p-10">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <div class="space-y-2 mb-6" data-flash="5000">
+                {% for category, message in messages %}
+                  <div class="rounded-xl px-3 py-2 text-sm font-medium
+                    {% if category == 'success' %}bg-emerald-500/20 border border-emerald-500/30 text-emerald-400
+                    {% elif category == 'error' %}bg-amber-500/20 border border-amber-500/30 text-amber-400
+                    {% else %}bg-blue-500/20 border border-blue-500/30 text-blue-400{% endif %}">
+                    {{ message }}
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endwith %}
+
+          {% include 'profil/mobile_nav.html' %}
+
+          <!-- KEAMANAN CONTENT -->
+          <section class="space-y-4" aria-labelledby="keamanan-label">
+            <h3 id="keamanan-label" class="font-opsdisplay text-lg font-bold text-maroon-dark">Keamanan</h3>
+            <p class="text-sm text-ink/60">Ubah password Anda. Gunakan password yang kuat dan unik.</p>
+
+            <form method="POST" action="{{ url_for('main.profil_password') }}" class="space-y-4 rounded-xl border border-maroon/15 bg-white p-6 transition-shadow hover:shadow-md">
+              <div>
+                <label for="current_password" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Password Saat Ini</label>
+                <input id="current_password" name="current_password" type="password" required autocomplete="current-password" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+              </div>
+              <div>
+                <label for="new_password" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Password Baru</label>
+                <input id="new_password" name="new_password" type="password" required autocomplete="new-password" minlength="8" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+                <div class="mt-1 h-1 w-full bg-stone-200 rounded-full overflow-hidden" id="password-strength-bar">
+                  <div class="h-full bg-transparent transition-all duration-300" style="width: 0%" id="password-strength-fill"></div>
+                </div>
+                <p class="mt-1 text-xs text-ink/60" id="password-strength-text">Minimal 8 karakter</p>
+              </div>
+              <div>
+                <label for="confirm_password" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Konfirmasi Password Baru</label>
+                <input id="confirm_password" name="confirm_password" type="password" required autocomplete="new-password" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+              </div>
+              <button type="submit" class="w-full rounded-lg bg-maroon py-3 text-sm font-bold text-white hover:bg-maroon-dark shadow-sm transition-all duration-150">Ubah Password</button>
+            </form>
+          </section>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
