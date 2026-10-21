@@ -1,0 +1,58 @@
+{% extends "dashboard/base.html" %}
+{% set active = 'produk' %}
+{% block title %}{% if product %}Ubah{% else %}Tambah{% endif %} Produk | Dashboard Catering Batam{% endblock %}
+{% block eyebrow %}Produk{% endblock %}
+{% block heading %}{% if product %}Ubah{% else %}Tambah{% endif %} Produk{% endblock %}
+{% block content %}
+<div class="max-w-3xl">
+  <form method="POST" enctype="multipart/form-data" class="space-y-6 rounded-xl border border-maroon/15 bg-white p-6 shadow-sm">
+    <div>
+      <label for="name" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Nama Produk</label>
+      <input id="name" name="name" type="text" required value="{{ product.name if product else '' }}" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150">
+    </div>
+    
+    <div>
+      <label for="category_id" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Kategori</label>
+      <select id="category_id" name="category_id" required class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150">
+        <option value="">Pilih kategori</option>
+        {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    <div>
+      <label for="description" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Deskripsi (opsional)</label>
+      <textarea id="description" name="description" rows="3" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150">{{ product.description if product else '' }}</textarea>
+    </div>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="price" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Harga (Rp)</label>
+        <input id="price" name="price" type="number" min="0" step="1000" required value="{{ product.price if product else '' }}" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150">
+      </div>
+      <div>
+        <label for="stock" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Stok</label>
+        <input id="stock" name="stock" type="number" min="0" required value="{{ product.stock if product else '' }}" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150">
+      </div>
+    </div>
+    
+    <div>
+      <label for="image" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Gambar (opsional)</label>
+      {% if product and product.image %}
+      <div class="mt-2 mb-2">
+        <img src="{{ url_for('static', filename=product.image.replace('static/', '')) }}" alt="{{ product.name }}" class="h-24 w-auto rounded-lg border border-maroon/15 object-cover">
+        <p class="mt-1 text-xs text-ink/50">Gambar saat ini. Kosongkan untuk tetap mempertahankan.</p>
+      </div>
+      {% endif %}
+      <input id="image" name="image" type="file" accept="image/png,image/jpeg,image/webp" class="mt-1 w-full text-sm text-ink/70 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-maroon file:text-white file:text-xs file:font-bold hover:file:bg-maroon-dark">
+      <p class="mt-1 text-xs text-ink/50">PNG/JPG/WebP, max 2MB. Akan dikonversi ke WebP 800px.</p>
+    </div>
+    
+    <div class="flex justify-end gap-2 pt-2">
+      <a href="{{ url_for('admin.produk') }}" class="rounded-md border-2 border-maroon py-2 px-4 text-sm font-bold text-maroon hover:bg-maroon hover:text-white transition-colors">Batal</a>
+      <button type="submit" class="rounded-md bg-maroon py-2 px-4 text-sm font-bold text-white hover:bg-maroon-dark transition-colors">{% if product %}Simpan Perubahan{% else %}Tambah Produk{% endif %}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

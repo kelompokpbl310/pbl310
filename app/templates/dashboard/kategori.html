@@ -1,0 +1,53 @@
+{% extends "dashboard/base.html" %}
+{% set active = 'kategori' %}
+{% block title %}Kategori | Dashboard Catering Batam{% endblock %}
+{% block eyebrow %}Kategori • {{ categories|length }} kategori{% endblock %}
+{% block heading %}Kategori Produk{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+  <a href="{{ url_for('admin.kategori_create') }}" class="rounded-lg bg-maroon px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-maroon-dark transition-colors">+ Tambah kategori</a>
+</div>
+
+<section class="rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] shadow-sm transition-shadow hover:shadow-md">
+  <div class="flex items-center justify-between p-4 border-b border-maroon/10 bg-cream/50">
+    <span class="w-1.5 shrink-0 bg-maroon rounded-tl-xl" aria-hidden="true"></span>
+    <h2 class="sr-only">Daftar kategori</h2>
+  </div>
+  <div class="min-w-0 flex-1">
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[720px] text-left text-sm tabular-nums">
+        <thead>
+          <tr class="border-b border-maroon/10 text-xs uppercase tracking-wide text-maroon/60">
+            <th class="px-5 py-3">Nama</th>
+            <th class="hidden px-3 py-3 md:table-cell">Slug</th>
+            <th class="hidden px-3 py-3 lg:table-cell">Deskripsi</th>
+            <th class="px-3 py-3">Produk</th>
+            <th class="px-5 py-3 text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-maroon/10">
+          {% for cat in categories %}
+          <tr class="hover:bg-cream/50 transition-colors">
+            <td class="px-5 py-3 font-semibold text-ink">{{ cat.name }}</td>
+            <td class="hidden px-3 py-3 text-ink/60 font-mono text-xs md:table-cell">{{ cat.slug }}</td>
+            <td class="hidden px-3 py-3 text-ink/60 lg:table-cell max-w-xs truncate">{{ cat.description or '-' }}</td>
+            <td class="whitespace-nowrap px-3 py-3 text-center text-ink/60">{{ cat.products|length }}</td>
+            <td class="px-5 py-3"><div class="flex justify-end gap-2">
+              <a href="{{ url_for('admin.kategori_edit', id=cat.id) }}" class="rounded-md border border-maroon bg-transparent  px-3 py-1.5 text-xs font-bold text-maroon hover:bg-maroon-dark hover:text-white transition-colors">Ubah</a>
+              <form method="POST" action="{{ url_for('admin.kategori_delete', id=cat.id) }}" onsubmit="return confirm('Hapus kategori ini?')" style="display:inline;">
+                <button type="submit" class="rounded-md bg-maroon px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700 transition-colors">Hapus</button>
+              </form>
+            </div></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="px-6 py-8 text-center text-ink/50">Belum ada kategori. Tambahkan yang pertama.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="hidden px-6 py-8 text-center text-sm text-ink/60">Tidak ada kategori.</p>
+  </div>
+</section>
+{% endblock %}

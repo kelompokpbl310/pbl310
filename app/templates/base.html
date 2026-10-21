@@ -52,6 +52,7 @@
           >
         </nav>
         <div class="flex items-center gap-3">
+          {% if current_user.is_authenticated %}
           <a
             href="{{ url_for('main.checkout') }}"
             aria-label="Keranjang"
@@ -69,6 +70,7 @@
                 d="M3 3h2l.4 2M7 13h10l3-8H5.4M7 13L5.4 5M7 13l-2 4h12M9 21a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z"
               /></svg
           ></a>
+          {% endif %}
           {% if current_user.is_authenticated %}
           <!-- Profile Dropdown -->
           <div class="relative" id="profile-dropdown">
@@ -128,6 +130,19 @@
                 </svg>
                 Riwayat Pesanan
               </a>
+              {% if current_user.is_authenticated and current_user.role == 'admin' %}
+              <hr class="my-1 border-maroon/20" />
+              <a
+                href="{{ url_for('admin.dashboard') }}"
+                class="flex items-center gap-2 px-4 py-2 text-sm text-maroon hover:bg-white"
+                role="menuitem"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+                Dashboard Admin
+              </a>
+              {% endif %}
               <hr class="my-1 border-maroon/20" />
               <form action="{{ url_for('auth.logout') }}" method="POST">
                 <button

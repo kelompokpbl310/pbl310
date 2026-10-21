@@ -1,41 +1,48 @@
 {% extends "dashboard/base.html" %}
 {% set active = 'produk' %}
 {% block title %}Produk | Dashboard Catering Batam{% endblock %}
-{% block eyebrow %}Katalog • 9 produk aktif{% endblock %}
+{% block eyebrow %}Katalog{% endblock %}
 {% block heading %}Produk & Paket{% endblock %}
 {% block content %}
 <div class="flex flex-wrap items-center gap-2">
   <div class="flex gap-2 overflow-x-auto">
-    {% for c in ['Semua','Sate','Kebuli','Gulai','Guling','Prasmanan'] %}
-    <button class="shrink-0 rounded-lg px-4 py-1.5 text-xs font-bold transition-all duration-150 {% if c=='Semua' %}bg-maroon text-white shadow-sm{% else %}bg-white text-maroon ring-1 ring-maroon/15 hover:bg-cream hover:ring-maroon/30{% endif %}">{{ c }}</button>
+    <button class="shrink-0 rounded-lg px-4 py-1.5 text-xs font-bold bg-maroon text-white shadow-sm">Semua</button>
+    {% for cat in categories %}
+    <button class="shrink-0 rounded-lg px-4 py-1.5 text-xs font-bold bg-white text-maroon ring-1 ring-maroon/15 hover:bg-cream hover:ring-maroon/30 transition-all duration-150">{{ cat.name }}</button>
     {% endfor %}
   </div>
-  <button class="ml-auto rounded-lg bg-maroon px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-maroon-dark transition-colors">+ Tambah produk</button>
+  <div class="ml-auto flex gap-2">
+    <a href="{{ url_for('admin.kategori_create') }}" class="rounded-lg bg-maroon px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-maroon-dark transition-colors">+ Tambah kategori</a>
+    <a href="{{ url_for('admin.produk_create') }}" class="rounded-lg bg-maroon px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-maroon-dark transition-colors">+ Tambah produk</a>
+  </div>
 </div>
 
 <section class="mt-4 grid grid-cols-2 gap-4 sm:gap-5 xl:grid-cols-3">
-  {% for p, harga, stok, img in [
-    ('Sate Kambing Empuk','Rp 38.000','Stok: 120 tusuk','img/assets4.png'),
-    ('Nasi Kebuli Rempah','Rp 40.000','Stok: 80 box','img/assets2.png'),
-    ('Gulai Kambing Gurih','Rp 42.000','Stok: 60 porsi','img/assets3.png'),
-    ('Kambing Guling Utuh','Rp 2.450.000','Stok: 4 ekor','img/assets1.png'),
-    ('Nasi Mandhi Kambing','Rp 44.000','Stok: 50 porsi','img/assets2.png'),
-    ('Paket Prasmanan Aqiqah','Rp 2.750.000','Pre-order H-3','img/assets1.png'),
-  ] %}
-  <article class="overflow-hidden rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
+  {% for p in products %}
+  <article class="overflow-hidden rounded-xl border border-maroon/15 bg-paper shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
     <div class="relative aspect-[16/10] bg-cream overflow-hidden">
-      <img src="{{ url_for('static', filename=img) }}" alt="{{ p }}" loading="lazy" class="h-full w-full object-cover transition-transform duration-300 hover:scale-105" />
-      <span class="absolute left-3 top-3 rounded-full bg-cream/95 px-3 py-1 text-[11px] font-extrabold tabular-nums text-maroon backdrop-blur-sm">{{ stok }}</span>
+      {% if p.image %}
+      <img src="{{ url_for('static', filename=p.image.replace('static/', '')) }}" alt="{{ p.name }}" loading="lazy" class="h-full w-full object-cover transition-transform duration-300 hover:scale-105" />
+      {% else %}
+      <div class="h-full w-full flex items-center justify-center text-cream/50">Belum ada gambar</div>
+      {% endif %}
+      <span class="absolute left-3 top-3 rounded-full bg-cream/95 px-3 py-1 text-[11px] font-extrabold tabular-nums text-maroon backdrop-blur-sm">Stok: {{ p.stock }}</span>
     </div>
     <div class="border-t border-dashed border-maroon/20 p-3 sm:p-5">
-      <h3 class="font-opsdisplay text-sm font-bold text-maroon-dark sm:text-base">{{ p }}</h3>
-      <p class="mt-0.5 font-opsdisplay text-sm font-bold tabular-nums text-maroon sm:text-lg">{{ harga }}</p>
+      <h3 class="font-opsdisplay text-sm font-bold text-maroon-dark sm:text-base">{{ p.name }}</h3>
+      <p class="mt-0.5 font-opsdisplay text-sm font-bold tabular-nums text-maroon sm:text-lg">Rp {{ "{:,.0f}".format(p.price).replace(",", ".") }}</p>
       <div class="mt-4 flex gap-2">
-        <button class="flex-1 rounded-md bg-maroon py-2 text-xs font-bold text-white hover:bg-maroon-dark transition-colors">Ubah</button>
-        <button class="flex-1 rounded-md border-2 border-maroon py-1.5 text-xs font-bold text-maroon hover:bg-maroon hover:text-white transition-colors">Nonaktifkan</button>
+        <a href="{{ url_for('admin.produk_edit', id=p.id) }}" class="flex-1 rounded-md bg-maroon py-2 text-xs font-bold text-white hover:bg-maroon-dark transition-colors text-center">Ubah</a>
+        <form method="POST" action="{{ url_for('admin.produk_toggle', id=p.id) }}" style="display:inline;">
+          <button type="submit" class="flex-1 rounded-md border-2 border-maroon py-1.5 text-xs font-bold text-maroon hover:bg-maroon hover:text-white transition-colors">{{ 'Aktifkan' if not p.is_active else 'Nonaktifkan' }}</button>
+        </form>
       </div>
     </div>
   </article>
+  {% else %}
+  <div class="col-span-full text-center py-12 text-ink/50">
+    <p>Belum ada produk. <a href="{{ url_for('admin.produk_create') }}" class="text-maroon hover:underline">Tambah yang pertama</a>.</p>
+  </div>
   {% endfor %}
 </section>
 {% endblock %}

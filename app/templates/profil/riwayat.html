@@ -17,10 +17,7 @@
             {% if messages %}
               <div class="space-y-2 mb-6" data-flash="5000">
                 {% for category, message in messages %}
-                  <div class="rounded-xl px-3 py-2 text-sm font-medium
-                    {% if category == 'success' %}bg-emerald-500/20 border border-emerald-500/30 text-emerald-400
-                    {% elif category == 'error' %}bg-amber-500/20 border border-amber-500/30 text-amber-400
-                    {% else %}bg-blue-500/20 border border-blue-500/30 text-blue-400{% endif %}">
+                  <div class="rounded-xl px-3 py-2 text-sm font-medium bg-transparent border-2 border-maroon text-maroon">
                     {{ message }}
                   </div>
                 {% endfor %}
