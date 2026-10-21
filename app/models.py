@@ -41,10 +41,28 @@ class Category(db.Model):
         return f'<Category {self.name}>'
 
 
+class MenuType(db.Model):
+    __tablename__ = 'menu_types'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    slug = db.Column(db.String(50), unique=True, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    icon = db.Column(db.String(255), nullable=True)  # SVG or image path
+    display_order = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    products = db.relationship('Product', backref='menu_type', lazy=True)
+
+    def __repr__(self):
+        return f'<MenuType {self.name}>'
+
+
 class Product(db.Model):
     __tablename__ = 'products'
     id = db.Column(db.Integer, primary_key=True)
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
+    menu_type_id = db.Column(db.Integer, db.ForeignKey('menu_types.id'), nullable=True)
     name = db.Column(db.String(100), nullable=False)
     slug = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.Text, nullable=True)
@@ -52,6 +70,7 @@ class Product(db.Model):
     image = db.Column(db.String(255), nullable=True)
     stock = db.Column(db.Integer, default=0)
     is_active = db.Column(db.Boolean, default=True)
+    is_featured = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 

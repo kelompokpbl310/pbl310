@@ -89,14 +89,16 @@
       <p class="mt-3 text-base sm:text-lg text-white/80">Prinsip yang tidak pernah kami tawar.</p>
     </div>
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {% for icon_svg, judul, deskripsi in [
-        ('<svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/><path d="M12 7v10"/><path d="M7 12h10"/></svg>', 'Syar\'i & Jujur', 'Hewan cukup umur, sehat, bebas cacat. Penyembelihan menyebut nama sohibul. Tidak ada pintas.'),
-        ('<svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>', 'Rasa Otentik', 'Bumbu rempah khas Batam & Timur Tengah yang diwariskan generasi. Tanpa MSG berlebihan, rasa alami.'),
-        ('<svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>', 'Transparan', 'Setiap acara didokumentasi foto & video berlabel nama anak. Sertifikat aqiqah otomatis dicetak.'),
-        ('<svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M18 22V12"/><path d="M22 16H14"/><path d="M6 22V7.75a1.25 1.25 0 0 1 2.5 0V22"/><path d="M10 11.5H2"/></svg>', 'Keluarga', 'Kami bukan vendor — kami bagian dari syukuran Anda. Konsultasi gratis, antar gratis, hati terbuka.'),
+      {% for icon_class, judul, deskripsi in [
+        ('fa-solid fa-circle-check', 'Syar\'i & Jujur', 'Hewan cukup umur, sehat, bebas cacat. Penyembelihan menyebut nama sohibul. Tidak ada pintas.'),
+        ('fa-solid fa-leaf', 'Rasa Otentik', 'Bumbu rempah khas Batam & Timur Tengah yang diwariskan generasi. Tanpa MSG berlebihan, rasa alami.'),
+        ('fa-solid fa-file-lines', 'Transparan', 'Setiap acara didokumentasi foto & video berlabel nama anak. Sertifikat aqiqah otomatis dicetak.'),
+        ('fa-solid fa-users', 'Keluarga', 'Kami bukan vendor — kami bagian dari syukuran Anda. Konsultasi gratis, antar gratis, hati terbuka.'),
       ] %}
       <article class="rounded-2xl border border-cream/30 bg-cream p-6 text-center transition-shadow hover:shadow-xl">
-        <span class="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-gold text-maroon-dark mb-3" aria-hidden="true">{{ icon_svg | safe }}</span>
+        <span class="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-gold text-maroon-dark mb-3" aria-hidden="true">
+          <i class="{{ icon_class }} fa-2xl"></i>
+        </span>
         <h3 class="font-opsdisplay font-bold text-maroon-dark">{{ judul }}</h3>
         <p class="mt-2 text-sm leading-relaxed text-maroon/70">{{ deskripsi }}</p>
       </article>
@@ -115,6 +117,42 @@
         <a href="{{ url_for('main.produk') }}" class="inline-flex items-center justify-center gap-2 rounded-full bg-cream px-8 py-3 text-sm font-semibold text-maroon shadow transition hover:bg-white">Lihat Paket Aqiqah</a>
         <a href="https://wa.me/628126999825" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-full border-2 border-cream px-8 py-3 text-sm font-semibold text-white transition hover:bg-cream hover:text-maroon">Chat WhatsApp</a>
       </div>
+    </div>
+  </div>
+</section>
+
+<section id="kontak" class="py-16 bg-maroon text-white scroll-mt-24">
+  <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20">
+    <div class="mx-auto mb-12 max-w-2xl text-center">
+      <h2 class="text-3xl font-extrabold sm:text-4xl">Hubungi Kami</h2>
+      <p class="mt-3 text-base sm:text-lg text-white/80">Butuh konsultasi? Tim kami siap membantu.</p>
+    </div>
+    <div class="grid gap-8 lg:grid-cols-3 max-w-4xl mx-auto">
+      <article class="text-center p-6 rounded-2xl border border-cream/30 transition hover:border-gold/50">
+        <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-xl bg-gold/20 text-gold mb-3">
+          <i class="fa-solid fa-phone fa-2xl"></i>
+        </div>
+        <h3 class="mt-4 font-bold text-lg text-white">Telepon</h3>
+        <p class="mt-2 text-white/80"><a href="tel:+628126999825" class="hover:text-white">+62 812 699 9825</a></p>
+        <p class="mt-1 text-xs text-white/60">Senin – Jumat: 08.00 – 20.00 WIB</p>
+        <p class="text-xs text-white/60">Sabtu – Minggu: 08.00 – 19.00 WIB</p>
+      </article>
+      <article class="text-center p-6 rounded-2xl border border-cream/30 transition hover:border-gold/50">
+        <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-xl bg-gold/20 text-gold mb-3">
+          <i class="fa-solid fa-envelope fa-2xl"></i>
+        </div>
+        <h3 class="mt-4 font-bold text-lg text-white">Email</h3>
+        <p class="mt-2 text-white/80"><a href="mailto:info@cateringbatam.com" class="hover:text-white">info@cateringbatam.com</a></p>
+        <p class="mt-1 text-xs text-white/60">Balas dalam 1×24 jam kerja</p>
+      </article>
+      <article class="text-center p-6 rounded-2xl border border-cream/30 transition hover:border-gold/50">
+        <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-xl bg-gold/20 text-gold mb-3">
+          <i class="fa-solid fa-location-dot fa-2xl"></i>
+        </div>
+        <h3 class="mt-4 font-bold text-lg text-white">Alamat</h3>
+        <p class="mt-2 text-white/80">Batam Centre, Kota Batam</p>
+        <p class="text-xs text-white/60">Kepulauan Riau, Indonesia</p>
+      </article>
     </div>
   </div>
 </section>

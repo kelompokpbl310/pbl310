@@ -386,4 +386,27 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => el.remove(), 300);
     }, delay);
   });
+
+  // Product filter tabs
+  $$(".filter-tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const filter = btn.dataset.filter;
+      // Update active tab
+      $$(".filter-tab").forEach((t) => {
+        const on = t === btn;
+        t.classList.toggle("bg-maroon", on);
+        t.classList.toggle("text-white", on);
+        t.classList.toggle("border-maroon", on);
+        t.classList.toggle("bg-maroon/30", !on);
+        t.classList.toggle("text-maroon", !on);
+        t.setAttribute("aria-selected", on);
+      });
+      // Filter cards
+      $$(".product-card").forEach((card) => {
+        const cat = card.dataset.category;
+        const show = filter === "all" || cat.toLowerCase() === filter.toLowerCase();
+        card.classList.toggle("hidden", !show);
+      });
+    });
+  });
 });

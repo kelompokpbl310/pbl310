@@ -51,9 +51,7 @@ dan kambing guling khas rempah pilihan.{% endblock %} {% block content %}
         aria-label="Slide sebelumnya"
         class="absolute -left-1 top-[35%] z-10 -translate-y-1/2 rounded-full bg-maroon-dark/60 p-1.5 text-cream transition hover:scale-110 sm:top-1/2 lg:-left-14 lg:bg-transparent lg:p-0"
       >
-        <svg class="h-6 w-6 lg:h-12 lg:w-12" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M16 3v18L5 12z" />
-        </svg>
+        <i class="fa-solid fa-chevron-left fa-2xl lg:fa-3xl"></i>
       </button>
       <div class="mx-auto max-w-5xl">
         <div
@@ -216,9 +214,7 @@ dan kambing guling khas rempah pilihan.{% endblock %} {% block content %}
         aria-label="Slide berikutnya"
         class="absolute -right-1 top-[35%] z-10 -translate-y-1/2 rounded-full bg-maroon-dark/60 p-1.5 text-cream transition hover:scale-110 sm:top-1/2 lg:-right-14 lg:bg-transparent lg:p-0"
       >
-        <svg class="h-6 w-6 lg:h-12 lg:w-12" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M8 3v18l11-9z" />
-        </svg>
+        <i class="fa-solid fa-chevron-right fa-2xl lg:fa-3xl"></i>
       </button>
       <div class="mt-10 flex items-center justify-center gap-2">
         <button
@@ -255,6 +251,7 @@ dan kambing guling khas rempah pilihan.{% endblock %} {% block content %}
         </p>
       </div>
       <div class="grid grid-cols-2 gap-4 sm:gap-8 lg:grid-cols-4">
+        {% for p in paket_pilihan %}
         <a
           href="{{ url_for('main.produk', _anchor='katalog') }}"
           class="group flex flex-col items-center text-center"
@@ -262,72 +259,21 @@ dan kambing guling khas rempah pilihan.{% endblock %} {% block content %}
           <div
             class="aspect-square w-full overflow-hidden rounded-lg border border-maroon/10 bg-stone-200 shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-xl"
           >
+            {% if p.image %}
             <img
-              src="{{ url_for('static', filename='img/assets4.png') }}"
-              alt="Sate Kambing"
+              src="{{ url_for('static', filename=p.image.replace('static/', '')) }}"
+              alt="{{ p.name }}"
               loading="lazy"
               class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
             />
+            {% else %}
+            <div class="h-full w-full flex items-center justify-center text-stone-400">Gambar belum tersedia</div>
+            {% endif %}
           </div>
-          <h3 class="mt-3 text-base font-bold text-maroon sm:mt-5 sm:text-xl">Sate Kambing</h3>
-          <p class="mt-1 text-xs text-maroon/75 sm:text-sm">
-            Daging empuk dengan bumbu kacang & kecap lezat
-          </p></a
-        ><a
-          href="{{ url_for('main.produk', _anchor='katalog') }}"
-          class="group flex flex-col items-center text-center"
-        >
-          <div
-            class="aspect-square w-full overflow-hidden rounded-lg border border-maroon/10 bg-stone-200 shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-xl"
-          >
-            <img
-              src="{{ url_for('static', filename='img/assets2.png') }}"
-              alt="Nasi Kebuli"
-              loading="lazy"
-              class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-            />
-          </div>
-          <h3 class="mt-3 text-base font-bold text-maroon sm:mt-5 sm:text-xl">Nasi Kebuli</h3>
-          <p class="mt-1 text-xs text-maroon/75 sm:text-sm">
-            Aroma rempah khas Timur Tengah, gurih kaya rasa
-          </p></a
-        ><a
-          href="{{ url_for('main.produk', _anchor='katalog') }}"
-          class="group flex flex-col items-center text-center"
-        >
-          <div
-            class="aspect-square w-full overflow-hidden rounded-lg border border-maroon/10 bg-stone-200 shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-xl"
-          >
-            <img
-              src="{{ url_for('static', filename='img/assets3.png') }}"
-              alt="Gulai Kambing"
-              loading="lazy"
-              class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-            />
-          </div>
-          <h3 class="mt-3 text-base font-bold text-maroon sm:mt-5 sm:text-xl">Gulai Kambing</h3>
-          <p class="mt-1 text-xs text-maroon/75 sm:text-sm">
-            Kuah santan rempah kental tanpa bau prengus
-          </p></a
-        ><a
-          href="{{ url_for('main.produk', _anchor='katalog') }}"
-          class="group flex flex-col items-center text-center"
-        >
-          <div
-            class="aspect-square w-full overflow-hidden rounded-lg border border-maroon/10 bg-stone-200 shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-xl"
-          >
-            <img
-              src="{{ url_for('static', filename='img/assets1.png') }}"
-              alt="Kambing Guling"
-              loading="lazy"
-              class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-            />
-          </div>
-          <h3 class="mt-3 text-base font-bold text-maroon sm:mt-5 sm:text-xl">Kambing Guling</h3>
-          <p class="mt-1 text-xs text-maroon/75 sm:text-sm">
-            Pilihan utama pesta & syukuran keluarga besar
-          </p></a
-        >
+          <h3 class="mt-3 text-base font-bold text-maroon sm:mt-5 sm:text-xl">{{ p.menu_type.name if p.menu_type else p.name }}</h3>
+          <p class="mt-1 text-xs text-maroon/75 sm:text-sm">{{ p.menu_type.description if p.menu_type and p.menu_type.description else '' }}</p>
+        </a>
+        {% endfor %}
       </div>
       <div class="mt-12 text-center">
         <a

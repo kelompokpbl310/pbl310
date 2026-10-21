@@ -4,12 +4,26 @@ from flask import render_template, url_for, request, redirect, flash
 from flask_login import login_required, current_user
 from app.main import bp
 from app import db
-from app.models import Product, User
+from app.models import Product, User, Category, MenuType
 from werkzeug.utils import secure_filename
 from PIL import Image
 import os
 import uuid
 
+
+# Sample products for catalog (static sample data until DB is seeded)
+SAMPLE_PRODUCTS = [
+    dict(name='Sate Kambing Bumbu Kacang', desc='Sate empuk dengan bumbu kacang khas, dibakar arang kelapa', price=38000, unit='10 tusuk', rating='5,0', reviews=48, img='img/assets4.png', category='Sate'),
+    dict(name='Nasi Kebuli Rempah Nusantara', desc='Aroma rempah khas Timur Tengah, gurih dan kaya rasa', price=40000, unit='1 porsi', rating='4,9', reviews=62, img='img/assets2.png', category='Kebuli'),
+    dict(name='Gulai Kambing Santan Premium', desc='Kuah santan rempah kental tanpa bau prengus', price=42000, unit='1 porsi', rating='4,9', reviews=35, img='img/assets3.png', category='Gulai'),
+    dict(name='Kambing Guling Utuh Spesial', desc='Pilihan utama pesta dan syukuran keluarga besar', price=2450000, unit='1 ekor', rating='5,0', reviews=24, img='img/assets1.png', category='Guling'),
+    dict(name='Nasi Mandhi Kambing Komplit', desc='Nasi rempah Arab dengan lauk kambing gurih', price=44000, unit='1 porsi', rating='4,8', reviews=41, img='img/assets2.png', category='Kebuli'),
+    dict(name='Sate Kecap Manis Pedas', desc='Perpaduan manis kecap dan pedas cabai rawit', price=38000, unit='10 tusuk', rating='4,9', reviews=37, img='img/assets4.png', category='Sate'),
+    dict(name='Sop Kaki Kambing Rempah', desc='Kuah bening gurih dengan rempah hangat', price=39000, unit='1 porsi', rating='4,8', reviews=28, img='img/assets3.png', category='Gulai'),
+    dict(name='Paket Prasmanan Aqiqah', desc='Paket lengkap untuk syukuran bersamaan', price=2750000, unit='paket', rating='5,0', reviews=19, img='img/assets1.png', category='Prasmanan'),
+    dict(name='Gulai Kambing Muda Empuk', desc='Daging muda empuk, kuah gulai pekat rempah', price=43000, unit='1 porsi', rating='4,9', reviews=33, img='img/assets3.png', category='Gulai'),
+    dict(name='Tongseng Kambing Kuah Kuning', desc='Tongseng gurih dengan kol dan cabai segar', price=41000, unit='1 porsi', rating='4,8', reviews=30, img='img/assets4.png', category='Gulai'),
+]
 
 # Promo slides data (static for now)
 PROMO_SLIDES = [
@@ -44,7 +58,17 @@ PROMO_SLIDES = [
 
 @bp.route('/')
 def index():
-    return render_template('index.html')
+    # Get active menu types for "Paket Pilihan" section
+    menu_types = MenuType.query.filter_by(is_active=True).order_by(MenuType.display_order).all()
+    
+    # Get featured products for "Paket Pilihan" (fallback to first active product per menu type)
+    paket_pilihan = []
+    for mt in menu_types:
+        product = Product.query.filter_by(is_active=True, menu_type_id=mt.id).first()
+        if product:
+            paket_pilihan.append(product)
+    
+    return render_template('index.html', menu_types=menu_types, paket_pilihan=paket_pilihan)
 
 
 @bp.route('/produk')
@@ -57,7 +81,37 @@ def produk():
         else:
             item['cta_url'] = url_for(s['cta_endpoint'])
         slides.append(item)
-    return render_template('produk.html', promo_slides=slides)
+    
+    # Get active menu types for filter tabs
+    menu_types = MenuType.query.filter_by(is_active=True).order_by(MenuType.display_order).all()
+    
+    # Get active products from DB
+    products = Product.query.filter_by(is_active=True).order_by(Product.created_at.desc()).all()
+    
+    # Get featured products for "Produk Populer"
+    featured_products = Product.query.filter_by(is_active=True, is_featured=True).limit(2).all()
+    
+    # Convert DB products to dict format for template compatibility
+    def product_to_dict(p):
+        return dict(
+            name=p.name,
+            desc=p.description or '',
+            price=p.price,
+            unit=p.stock > 0 and '1 porsi' or 'Habis',  # simple stock indicator
+            rating='5,0',  # could add Review model later
+            reviews=0,
+            img=p.image.replace('static/', '') if p.image else 'img/assets1.png',
+            category=p.menu_type.name if p.menu_type else 'Lainnya'
+        )
+    
+    featured_products = [product_to_dict(p) for p in featured_products]
+    all_products = [product_to_dict(p) for p in products]
+    
+    return render_template('produk.html', 
+                           promo_slides=slides,
+                           menu_types=menu_types,
+                           featured_products=featured_products,
+                           all_products=all_products)
 
 
 @bp.route('/detail-produk')

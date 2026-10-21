@@ -16,6 +16,13 @@
     />
     <link
       rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
       href="{{ url_for('static', filename='style/site.css') }}"
     />
     {% block extra_head %}{% endblock %}
@@ -57,18 +64,7 @@
             href="{{ url_for('main.checkout') }}"
             aria-label="Keranjang"
             class="flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10"
-            ><svg
-              class="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M3 3h2l.4 2M7 13h10l3-8H5.4M7 13L5.4 5M7 13l-2 4h12M9 21a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z"
-              /></svg
+            ><i class="fa-solid fa-cart-shopping fa-lg"></i
           ></a>
           {% endif %}
           {% if current_user.is_authenticated %}
@@ -89,9 +85,7 @@
                   {{ current_user.fullname[0].upper() }}
                 </span>
               {% endif %}
-              <svg class="h-4 w-4 text-maroon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
+              <i class="fa-solid fa-chevron-down text-maroon"></i>
             </button>
 
             <!-- Dropdown Menu -->
@@ -105,9 +99,7 @@
                 class="flex items-center gap-2 px-4 py-2 text-sm text-maroon hover:bg-white"
                 role="menuitem"
               >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+                <i class="fa-solid fa-user fa-lg"></i>
                 Akun
               </a>
               <a
@@ -115,9 +107,7 @@
                 class="flex items-center gap-2 px-4 py-2 text-sm text-maroon hover:bg-white"
                 role="menuitem"
               >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
+                <i class="fa-solid fa-shield-halved fa-lg"></i>
                 Keamanan
               </a>
               <a
@@ -125,9 +115,7 @@
                 class="flex items-center gap-2 px-4 py-2 text-sm text-maroon hover:bg-white"
                 role="menuitem"
               >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
+                <i class="fa-solid fa-clock-rotate-left fa-lg"></i>
                 Riwayat Pesanan
               </a>
               {% if current_user.is_authenticated and current_user.role == 'admin' %}
@@ -137,9 +125,7 @@
                 class="flex items-center gap-2 px-4 py-2 text-sm text-maroon hover:bg-white"
                 role="menuitem"
               >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
+                <i class="fa-solid fa-gauge-high fa-lg"></i>
                 Dashboard Admin
               </a>
               {% endif %}
@@ -150,9 +136,7 @@
                   class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-white"
                   role="menuitem"
                 >
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
+                  <i class="fa-solid fa-right-from-bracket fa-lg"></i>
                   Keluar
                 </button>
               </form>
@@ -171,15 +155,7 @@
             aria-label="Buka menu"
             class="flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-white/10 md:hidden"
           >
-            <svg
-              class="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-            >
-              <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            <i class="fa-solid fa-bars fa-lg"></i>
           </button>
         </div>
       </div>
@@ -199,108 +175,55 @@
     <main>{% block content %}{% endblock %}</main>
     <div class="h-0.5 bg-gold" aria-hidden="true"></div>
     <footer
-      id="kontak"
-      class="scroll-mt-24 border-t border-white/10 bg-maroon pb-8 pt-16 text-white mendung"
+      class="border-t border-white/10 bg-maroon pb-8 pt-12 text-white mendung"
     >
-      <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20">
-        <div
-          class="grid gap-10 border-b border-white/15 pb-12 md:grid-cols-12 lg:gap-14"
-        >
-          <div class="md:col-span-5">
+      <div class="mx-auto w-full max-w-7xl px-6 pt-6 sm:px-12 lg:px-20">
+        <div class="flex flex-row items-center justify-between gap-8 pb-8 border-b border-white/15">
+          <!-- Left: Logo stacked with tagline -->
+          <div class="max-w-md">
             <h4 class="font-logo text-lg flex flex-col uppercase tracking-[0.02em] leading-[1.15]">
               <span>Catering</span><span>Batam</span>
             </h4>
-            <p class="mt-4 max-w-sm text-sm leading-relaxed text-white/75">
-              Layanan catering aqiqah, kambing guling, dan nasi kotak syukuran
-              nomor satu di Batam. Halal, higienis, dan terpercaya sejak 2015.
-            </p>
-            <div class="mt-6 flex gap-3">
+            <p class="mt-3 text-sm text-white/70 leading-relaxed">Layanan catering aqiqah, kambing guling, dan nasi kotak syukuran nomor satu di Batam. Halal, higienis, dan terpercaya sejak 2015.</p>
+          <p class="flex gap-6 pt-2 text-xs text-cream">
+            <a href="#" class="hover:text-white">Syarat Penggunaan</a
+            ><a href="#" class="hover:text-white">Kebijakan Privasi</a>
+          </p>
+          </div>
+          
+          <!-- Right: Social media 2x2 grid -->
+          <div class="flex justify-end">
+            <div class="grid grid-cols-2 gap-3 w-fit">
               <a
                 href="#"
                 aria-label="Facebook"
-                class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-sm font-bold text-white transition hover:bg-white hover:text-maroon"
-                >f</a
-              ><a
+                class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15 text-white transition hover:bg-white hover:text-maroon"
+                ><i class="fa-brands fa-facebook-f fa-lg"></i
+              ></a>
+              <a
                 href="#"
                 aria-label="Instagram"
-                class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-sm font-bold text-white transition hover:bg-white hover:text-maroon"
-                >ig</a
-              ><a
+                class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15 text-white transition hover:bg-white hover:text-maroon"
+                ><i class="fa-brands fa-instagram fa-lg"></i
+              ></a>
+              <a
                 href="#"
                 aria-label="WhatsApp"
-                class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-sm font-bold text-white transition hover:bg-white hover:text-maroon"
-                >wa</a
-              ><a
+                class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15 text-white transition hover:bg-white hover:text-maroon"
+                ><i class="fa-brands fa-whatsapp fa-lg"></i
+              ></a>
+              <a
                 href="#"
                 aria-label="YouTube"
-                class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-sm font-bold text-white transition hover:bg-white hover:text-maroon"
-                >yt</a
-              >
+                class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15 text-white transition hover:bg-white hover:text-maroon"
+                ><i class="fa-brands fa-youtube fa-lg"></i
+              ></a>
             </div>
-            <p class="mt-6 flex gap-6 text-xs text-white/70">
-              <a href="#" class="hover:text-white">Syarat Penggunaan</a
-              ><a href="#" class="hover:text-white">Kebijakan Privasi</a>
-            </p>
-          </div>
-          <div class="md:col-span-3">
-            <h4 class="text-lg font-bold">Halaman</h4>
-            <ul class="mt-4 space-y-2.5 text-sm text-white/80">
-              <li>
-                <a
-                  href="{{ url_for('main.index') }}"
-                  class="transition hover:text-white"
-                  >Beranda</a
-                >
-              </li>
-              <li>
-                <a
-                  href="{{ url_for('main.tentang') }}"
-                  class="transition hover:text-white"
-                  >Tentang Kami</a
-                >
-              </li>
-              <li>
-                <a
-                  href="{{ url_for('main.produk') }}"
-                  class="transition hover:text-white"
-                  >Produk</a
-                >
-              </li>
-            </ul>
-          </div>
-          <div class="md:col-span-4">
-            <h4 class="text-lg font-bold">Hubungi Kami</h4>
-            <ul class="mt-4 space-y-2.5 text-sm text-white/80">
-              <li>
-                <span class="font-semibold text-white">Telepon:</span>
-                <a href="tel:+628126999825" class="hover:text-white"
-                  >+62 812 699 9825</a
-                >
-              </li>
-              <li>
-                <span class="font-semibold text-white">Email:</span>
-                <a href="mailto:info@cateringbatam.com" class="hover:text-white"
-                  >info@cateringbatam.com</a
-                >
-              </li>
-              <li>
-                <span class="font-semibold text-white">Senin – Jumat:</span>
-                08.00 – 20.00 WIB
-              </li>
-              <li>
-                <span class="font-semibold text-white">Sabtu – Minggu:</span>
-                08.00 – 19.00 WIB
-              </li>
-              <li>
-                <span class="font-semibold text-white">Alamat:</span> Batam
-                Centre, Kota Batam, Kepulauan Riau
-              </li>
-            </ul>
           </div>
         </div>
-        <p class="mt-8 text-center text-xs text-white/60">
-          © 2026 Catering Batam. Hak cipta dilindungi undang-undang.
-        </p>
+        <div class="flex flex-row md:flex-row md:items-center justify-center gap-4 mt-6">
+          <p class="text-xs text-white/60">© 2026 Catering Batam. Hak cipta dilindungi undang-undang.</p>
+        </div>
       </div>
     </footer>
     <script src="{{ url_for('static', filename='script/site.js') }}"></script>
