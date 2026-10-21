@@ -1,7 +1,9 @@
 """Catering Batam - Flask Application Factory"""
 
 import os
-from flask import Flask
+import logging
+from logging.handlers import RotatingFileHandler
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -17,6 +19,57 @@ migrate = Migrate()
 login_manager.login_view = 'auth.login'
 login_manager.login_message = 'Silakan login untuk mengakses halaman ini.'
 login_manager.login_message_category = 'info'
+
+
+def _configure_logging(app):
+    """Configure structured logging for the application."""
+    log_dir = os.path.join(app.root_path, '..', 'logs')
+    os.makedirs(log_dir, exist_ok=True)
+    
+    class ContextFormatter(logging.Formatter):
+        """Formatter that adds request context if available."""
+        def format(self, record):
+            # Add request context if available
+            from flask import has_request_context, request
+            if has_request_context():
+                record.url = request.url
+                record.method = request.method
+                record.remote_addr = request.remote_addr
+                record.user_agent = request.headers.get('User-Agent', '')
+            else:
+                record.url = ''
+                record.method = ''
+                record.remote_addr = ''
+                record.user_agent = ''
+            return super().format(record)
+    
+    # File handler with rotation (10MB per file, keep 10 files)
+    file_handler = RotatingFileHandler(
+        os.path.join(log_dir, 'catering_batam.log'),
+        maxBytes=10_000_000,
+        backupCount=10
+    )
+    file_handler.setFormatter(ContextFormatter(
+        '%(asctime)s %(levelname)s [%(name)s] %(message)s | url=%(url)s method=%(method)s ip=%(remote_addr)s ua="%(user_agent)s"'
+    ))
+    file_handler.setLevel(logging.INFO)
+    
+    # Console handler for development
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(ContextFormatter(
+        '%(asctime)s %(levelname)s [%(name)s] %(message)s'
+    ))
+    console_handler.setLevel(logging.DEBUG if app.debug else logging.INFO)
+    
+    # Configure root logger
+    app.logger.addHandler(file_handler)
+    app.logger.addHandler(console_handler)
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('Catering Batam application startup')
+    
+    # Configure security audit logger (separate JSON Lines log)
+    from app.security_logging import create_security_audit_logger
+    create_security_audit_logger(app)
 
 
 def create_app():
@@ -47,6 +100,9 @@ def create_app():
 
     from app.admin import bp as admin_bp
     app.register_blueprint(admin_bp, url_prefix='/admin')
+
+    # Configure logging
+    _configure_logging(app)
 
     # Template context processors
     @app.context_processor

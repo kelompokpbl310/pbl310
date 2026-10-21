@@ -1,10 +1,11 @@
 """Auth Routes - Login, Register, Logout"""
 
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from app.auth import bp
 from app import db
 from app.models import User
+from app.security_logging import log_auth_event
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -19,10 +20,37 @@ def login():
 
         if user and user.check_password(password):
             login_user(user)
+            # Log successful login - both admin and regular user
+            if user.role == 'admin':
+                log_auth_event(
+                    event='admin_login_success',
+                    user_id=user.id,
+                    username=user.username,
+                    role=user.role,
+                    status='success'
+                )
+            else:
+                log_auth_event(
+                    event='user_login_success',
+                    user_id=user.id,
+                    username=user.username,
+                    role=user.role,
+                    status='success'
+                )
             next_page = request.args.get('next')
             if user.role == 'admin':
                 return redirect(next_page or url_for('admin.dashboard'))
             return redirect(next_page or url_for('main.index'))
+        else:
+            # Log failed login attempt
+            reason = 'invalid_credentials' if user else 'user_not_found'
+            log_auth_event(
+                event='login_failed',
+                username=username,
+                status='failure',
+                reason=reason,
+                level=30  # WARNING
+            )
         flash('Username atau password salah.', 'error')
 
     return render_template('login.html')
@@ -64,6 +92,16 @@ def register():
 @bp.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
+    user_id = current_user.id
+    username = current_user.username
+    role = current_user.role
     logout_user()
+    log_auth_event(
+        event='user_logout',
+        user_id=user_id,
+        username=username,
+        role=role,
+        status='success'
+    )
     flash('Anda telah keluar.', 'info')
     return redirect(url_for('main.index'))

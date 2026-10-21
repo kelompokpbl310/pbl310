@@ -387,6 +387,30 @@ document.addEventListener("DOMContentLoaded", () => {
     }, delay);
   });
 
+  // Product search
+  const searchInput = $("#product-search");
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      $$(".product-card").forEach((card) => {
+        const name = card.querySelector("h3 a")?.textContent?.toLowerCase() || "";
+        const show = name.includes(query);
+        card.classList.toggle("hidden", !show);
+      });
+      // If a filter tab is active, we need to respect both search and filter
+      const activeFilter = document.querySelector(".filter-tab[aria-selected='true']")?.dataset?.filter || "all";
+      if (activeFilter !== "all") {
+        $$(".product-card").forEach((card) => {
+          const cat = card.dataset.category;
+          const filterMatch = cat.toLowerCase() === activeFilter.toLowerCase();
+          const name = card.querySelector("h3 a")?.textContent?.toLowerCase() || "";
+          const searchMatch = name.includes(query);
+          card.classList.toggle("hidden", !(filterMatch && searchMatch));
+        });
+      }
+    });
+  }
+
   // Product filter tabs
   $$(".filter-tab").forEach((btn) => {
     btn.addEventListener("click", () => {
