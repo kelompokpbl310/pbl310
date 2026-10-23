@@ -12,6 +12,13 @@ dibangun dengan **Flask + Jinja + Tailwind CSS v4 + SQLAlchemy + Flask-Login + F
 - Migrations: Flask-Migrate (Alembic) configured
 - Blueprint structure: `main`, `auth`, `admin`, `api`
 
+✅ **Security Audit Logging (SELESAI)**
+- Dedicated security logger: `app/security_logging.py`
+- JSON Lines output to `logs/security_audit.json` (rotating 10MB, 10 backups)
+- Events: `admin_login_success`, `user_login_success`, `login_failed`, `user_logout`
+- Separate from application log (`logs/catering_batam.log`)
+- Wazuh SIEM-ready schema (ISO 8601 UTC timestamps, `srcip` field, stable event names)
+
 ## Kebutuhan
 
 | Perangkat | Versi | Keterangan |
@@ -121,6 +128,7 @@ Buka http://127.0.0.1:5000
 app/
 ├── __init__.py          # create_app(), extensions (db, login, migrate), blueprints
 ├── models.py            # Semua models (User, Product, Order, dll)
+├── security_logging.py  # Security audit logger (JSON Lines → logs/security_audit.json)
 ├── auth/
 │   ├── __init__.py
 │   └── routes.py        # login, register, logout
@@ -159,6 +167,7 @@ migrations/              # Alembic migrations
 input.css                # Token Tailwind v4 + utilitas batik/mendung
 .env                     # Environment variables (DATABASE_URL, SECRET_KEY)
 PROGRESS.md              # Progress log per phase
+logs/                    # Runtime logs (gitignored): security_audit.json, catering_batam.log
 ```
 
 ## Database
@@ -183,6 +192,22 @@ flask db upgrade
 - `input.css` → source dengan `@theme` tokens + custom utilities (`.batik-light`, `.mendung`)
 - `static/style/site.css` → compiled output (auto-generated via `--watch`)
 - **Jangan edit `site.css` manual** — edit `input.css` lalu rebuild
+
+## Security Audit Logging
+
+- **Logger:** `app/security_logging.py` → `security_audit` logger (non-propagating)
+- **Output:** `logs/security_audit.json` (JSON Lines, UTF-8)
+- **Rotation:** 10 MB per file, 10 backup files
+- **Events:**
+  | Event | Level | Description |
+  | --- | --- | --- |
+  | `admin_login_success` | INFO | Admin login berhasil |
+  | `user_login_success` | INFO | User biasa login berhasil |
+  | `login_failed` | WARNING | Login gagal (reason: `invalid_credentials` / `user_not_found`) |
+  | `user_logout` | INFO | Logout berhasil (admin/user) |
+- **Schema (per line):** `timestamp` (ISO 8601 UTC), `level`, `event`, `user_id`, `username`, `role`, `srcip`, `http_method`, `request_path`, `user_agent`, `status`, `reason`
+- **Separation:** Application logs (`catering_batam.log`) and security audit logs are completely separate
+- **Wazuh-ready:** Stable event names, consistent fields, no sensitive data
 
 ## Design System
 
