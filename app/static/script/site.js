@@ -434,3 +434,78 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+// Cart page: live totals + auto-save (runs only when the cart form exists).
+(() => {
+  const form = document.getElementById("cart-form");
+  if (!form) return;
+
+  const rows = [...form.querySelectorAll("[data-cart-item]")];
+  const sumEl = document.querySelector("[data-cart-sum]");
+  const totalEl = document.querySelector("[data-cart-total]");
+  const rupiah = (n) => "Rp " + n.toLocaleString("id-ID");
+  let saveTimer = null;
+
+  const clampQty = (input) => {
+    const min = parseInt(input.min, 10) || 1;
+    const max = parseInt(input.max, 10) || Number.MAX_SAFE_INTEGER;
+    const raw = parseInt(input.value, 10);
+    return Math.min(max, Math.max(min, Number.isNaN(raw) ? min : raw));
+  };
+
+  const recalc = () => {
+    let sum = 0;
+    rows.forEach((row) => {
+      const input = row.querySelector("[data-cart-qty]");
+      if (!input) return;
+      const price = Number(row.dataset.price) || 0;
+      const subtotal = price * clampQty(input);
+      sum += subtotal;
+      const subEl = row.querySelector("[data-cart-subtotal]");
+      if (subEl) subEl.textContent = rupiah(subtotal);
+    });
+    if (sumEl) sumEl.textContent = rupiah(sum);
+    if (totalEl) totalEl.textContent = rupiah(sum);
+  };
+
+  const scheduleSave = () => {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      // Persist the clamped values, then let the server re-render the cart.
+      rows.forEach((row) => {
+        const input = row.querySelector("[data-cart-qty]");
+        if (input) input.value = clampQty(input);
+      });
+      if (typeof form.requestSubmit === "function") form.requestSubmit();
+      else form.submit();
+    }, 700);
+  };
+
+  form.addEventListener("submit", () => clearTimeout(saveTimer));
+
+  rows.forEach((row) => {
+    const input = row.querySelector("[data-cart-qty]");
+    if (!input) return;
+
+    const step = (delta) => {
+      input.value = clampQty(input) + delta;
+      input.value = clampQty(input);
+      recalc();
+      scheduleSave();
+    };
+
+    row.querySelector("[data-cart-minus]")?.addEventListener("click", () => step(-1));
+    row.querySelector("[data-cart-plus]")?.addEventListener("click", () => step(1));
+    input.addEventListener("input", () => {
+      recalc();
+      scheduleSave();
+    });
+    input.addEventListener("change", () => {
+      input.value = clampQty(input);
+      recalc();
+      scheduleSave();
+    });
+  });
+
+  recalc();
+})();

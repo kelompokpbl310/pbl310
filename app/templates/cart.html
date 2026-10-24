@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Keranjang | Catering Batam{% endblock %}
+{% block description %}Keranjang belanja catering aqiqah Anda.{% endblock %}
+{% block content %}
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <section class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20 py-4">
+    <div class="space-y-2" data-flash="5000">
+      {% for category, message in messages %}
+      <div class="rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-3
+        {% if category == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200
+        {% elif category == 'error' %}bg-red-50 text-red-800 border border-red-200
+        {% else %}bg-gold/10 text-gold border border-gold/30{% endif %}">
+        {% if category == 'success' %}<i class="fa-solid fa-circle-check"></i>
+        {% elif category == 'error' %}<i class="fa-solid fa-circle-exclamation"></i>
+        {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+{% endwith %}
+
+<!-- Hero / Breadcrumb -->
+<section class="bg-cream">
+  <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20 flex items-end justify-between gap-6 pt-10 lg:pt-12">
+    <div class="pb-10 lg:pb-12">
+      <span class="inline-block -rotate-2 border-2 border-maroon px-2 py-0.5 text-[11px] font-bold tracking-[0.14em] text-maroon">Pemesanan</span>
+      <h1 class="mt-1 font-display text-4xl font-black tracking-tight text-maroon-dark lg:text-5xl">Keranjang Belanja</h1>
+      <nav aria-label="Breadcrumb" class="mt-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-maroon/70">
+        <a href="{{ url_for('main.index') }}" class="hover:text-maroon">Beranda</a>
+        <span aria-hidden="true">›</span>
+        <a href="{{ url_for('main.produk') }}" class="hover:text-maroon">Produk</a>
+        <span aria-hidden="true">›</span>
+        <span class="font-bold text-maroon">Keranjang</span>
+      </nav>
+    </div>
+    <img src="{{ url_for('static', filename='img/goat.png') }}" alt="Kambing putih" class="h-44 w-auto shrink-0 object-contain lg:h-56">
+  </div>
+</section>
+
+<!-- Main Cart Section -->
+<section class="py-8">
+  <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20">
+    {% if cart_items %}
+    <div class="grid items-start gap-8 lg:grid-cols-12">
+
+      <!-- Cart Items (Left) -->
+      <form id="cart-form" class="rounded-3xl bg-cream p-8 shadow-2xl lg:col-span-8" method="POST" action="{{ url_for('main.cart_update') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="flex items-center justify-between border-b border-maroon/15 pb-3">
+          <h2 class="text-lg font-bold text-maroon">Produk di Keranjang ({{ cart_items|length }})</h2>
+          <a href="{{ url_for('main.produk') }}" class="text-sm font-semibold text-maroon hover:underline">← Lanjut Belanja</a>
+        </div>
+
+        <div class="divide-y divide-maroon/10">
+          {% for item in cart_items %}
+          <div class="flex flex-col gap-4 py-4 sm:flex-row sm:items-center" data-cart-item="{{ item.product_id }}" data-price="{{ item.price }}">
+
+            <!-- Thumbnail + Info -->
+            <div class="flex min-w-0 flex-1 items-center gap-4">
+              <a href="{{ url_for('main.detail_produk', id=item.product_id) }}" class="block h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-maroon/10 bg-stone-200" aria-label="{{ item.name }}">
+                {% if item.image %}
+                <img src="{{ url_for('static', filename=item.image.replace('static/', '')) }}" alt="{{ item.name }}" loading="lazy" class="h-full w-full object-cover">
+                {% else %}
+                <div class="flex h-full w-full items-center justify-center text-xs text-stone-500">No image</div>
+                {% endif %}
+              </a>
+              <div class="min-w-0 flex-1">
+                <h3 class="truncate text-sm font-bold text-maroon">
+                  <a href="{{ url_for('main.detail_produk', id=item.product_id) }}" class="hover:underline">{{ item.name }}</a>
+                </h3>
+                <p class="mt-0.5 text-xs text-stone-500">Rp {{ "{:,.0f}".format(item.price).replace(",", ".") }}{% if item.unit %} / {{ item.unit }}{% endif %}</p>
+                {% if item.menu_type %}
+                <p class="mt-0.5 text-xs text-maroon/70">{{ item.menu_type }}</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Quantity, Subtotal, Remove -->
+            <div class="flex items-center justify-between gap-4 sm:justify-end">
+              <div class="flex items-center overflow-hidden rounded-lg border-2 border-maroon bg-white">
+                <button type="button" data-cart-minus class="h-9 w-9 text-lg font-bold text-maroon hover:bg-cream" aria-label="Kurangi">−</button>
+                <input data-cart-qty type="number" name="quantities[{{ item.product_id }}]" min="1" max="{{ item.stock if item.stock > 0 else 99 }}" value="{{ item.quantity }}" class="w-12 border-0 bg-transparent text-center text-sm font-bold text-maroon focus:outline-none focus:ring-0" aria-label="Jumlah">
+                <button type="button" data-cart-plus class="h-9 w-9 text-lg font-bold text-maroon hover:bg-cream" aria-label="Tambah">+</button>
+              </div>
+              <p class="w-28 whitespace-nowrap text-right text-sm font-semibold text-maroon" data-cart-subtotal>Rp {{ "{:,.0f}".format(item.subtotal).replace(",", ".") }}</p>
+              <button type="submit" name="remove" value="{{ item.product_id }}" class="rounded-lg p-2 text-stone-400 transition hover:bg-red-50 hover:text-red-600" aria-label="Hapus {{ item.name }} dari keranjang">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Cart Actions -->
+        <div class="mt-6 flex flex-col gap-3 border-t border-maroon/15 pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <button type="submit" name="clear" value="1" formnovalidate class="inline-flex items-center justify-center gap-2 rounded-full border border-maroon/30 px-6 py-2.5 text-sm font-semibold text-maroon transition hover:bg-maroon/10" onclick="return confirm('Kosongkan seluruh keranjang?')">
+            <i class="fa-solid fa-broom"></i> Kosongkan Keranjang
+          </button>
+          <p class="text-xs text-stone-500">Jumlah tersimpan otomatis.</p>
+        </div>
+      </form>
+
+      <!-- Order Summary (Right) -->
+      <aside class="lg:col-span-4">
+        <div class="sticky top-24 rounded-2xl border border-maroon/10 bg-cream p-8 shadow-2xl">
+          <h2 class="border-b border-maroon/15 pb-3 text-lg font-bold text-maroon">Ringkasan Pesanan</h2>
+
+          <div class="mt-4 space-y-2 text-sm text-maroon/85">
+            <p class="flex justify-between">
+              <span>Subtotal ({{ cart_items|length }} produk)</span>
+              <span class="font-semibold" data-cart-sum>Rp {{ "{:,.0f}".format(cart_subtotal).replace(",", ".") }}</span>
+            </p>
+            <p class="flex justify-between">
+              <span>Ongkos Kirim (Area Batam)</span>
+              <span class="font-bold uppercase text-emerald-700">Gratis</span>
+            </p>
+            <p class="flex justify-between border-t border-maroon/15 pt-3 text-base font-bold text-maroon">
+              <span>Total</span>
+              <span data-cart-total>Rp {{ "{:,.0f}".format(cart_total).replace(",", ".") }}</span>
+            </p>
+          </div>
+
+          <a href="{{ url_for('main.checkout') }}" class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-maroon px-7 py-3.5 text-sm font-semibold text-white shadow transition hover:bg-maroon-dark">
+            Lanjut ke Checkout <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+      </aside>
+    </div>
+
+    {% else %}
+    <!-- Empty Cart State -->
+    <div class="mx-auto max-w-2xl rounded-3xl bg-cream px-8 py-12 text-center shadow-2xl">
+      <div class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-maroon/10">
+        <i class="fa-solid fa-cart-shopping text-4xl text-maroon"></i>
+      </div>
+      <h2 class="text-2xl font-extrabold text-maroon">Keranjang Anda Kosong</h2>
+      <p class="mx-auto mt-3 max-w-md text-base text-maroon/80">Belum ada produk yang ditambahkan. Jelajahi katalog kami dan temukan menu aqiqah favorit Anda.</p>
+      <a href="{{ url_for('main.produk') }}" class="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-maroon px-7 py-3 text-sm font-semibold text-white shadow transition hover:bg-maroon-dark">
+        <i class="fa-solid fa-utensils"></i> Mulai Belanja
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

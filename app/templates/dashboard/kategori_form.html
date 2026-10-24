@@ -6,6 +6,7 @@
 {% block content %}
 <div class="max-w-2xl">
   <form method="POST" class="space-y-4 rounded-xl border border-maroon/15 bg-white p-6 shadow-sm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div>
       <label for="name" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Nama Kategori</label>
       <input id="name" name="name" type="text" required value="{{ category.name if category else '' }}" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150">

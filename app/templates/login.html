@@ -19,6 +19,7 @@ catering aqiqah dengan lebih cepat.{% endblock %} {% block content %}
             Masukkan username dan password anda untuk login
           </p>
           <form method="POST" class="space-y-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             {% with messages = get_flashed_messages(with_categories=true) %}
               {% if messages %}
                 <div class="space-y-2" data-flash="5000">

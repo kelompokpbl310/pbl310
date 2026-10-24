@@ -34,6 +34,7 @@
       <div class="mt-4 flex gap-2">
         <a href="{{ url_for('admin.produk_edit', id=p.id) }}" class="flex-1 rounded-md bg-maroon py-2 text-xs font-bold text-white hover:bg-maroon-dark transition-colors text-center">Ubah</a>
         <form method="POST" action="{{ url_for('admin.produk_toggle', id=p.id) }}" style="display:inline;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="flex-1 rounded-md border-2 border-maroon py-1.5 text-xs font-bold text-maroon hover:bg-maroon hover:text-white transition-colors">{{ 'Aktifkan' if not p.is_active else 'Nonaktifkan' }}</button>
         </form>
       </div>

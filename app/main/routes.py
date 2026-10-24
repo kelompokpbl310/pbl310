@@ -1,10 +1,10 @@
 """Main Routes - Public Pages"""
 
-from flask import render_template, url_for, request, redirect, flash
+from flask import render_template, url_for, request, redirect, flash, session
 from flask_login import login_required, current_user
 from app.main import bp
 from app import db
-from app.models import Product, User, Category, MenuType
+from app.models import Product, User, Category, MenuType, Review
 from werkzeug.utils import secure_filename
 from PIL import Image
 import os
@@ -29,13 +29,13 @@ SAMPLE_PRODUCTS = [
 PROMO_SLIDES = [
     dict(badge='TERLARIS', headline='Nasi Kebuli Kambing',
          subtitle='Menu favorit pelanggan aqiqah. Bumbu rempah, daging empuk.',
-         price=40000, unit='/box', cta='Pesan Sekarang',
-         cta_endpoint='main.detail_produk', img='img/assets2.png',
+         price=40000, unit='/box', cta='Lihat Produk',
+         cta_endpoint='main.produk', img='img/assets2.png',
          alt='Nasi kebuli kambing dengan lauk, menu aqiqah terlaris'),
     dict(badge='HEMAT', headline='Paket Aqiqah Hemat',
          subtitle='Pas untuk syukuran sederhana, tetap lezat dan berkesan.',
-         price=38000, unit='', cta='Pesan Sekarang',
-         cta_endpoint='main.detail_produk', img='img/banners/paket-hemat.png',
+         price=38000, unit='', cta='Lihat Produk',
+         cta_endpoint='main.produk', img='img/banners/paket-hemat.png',
          alt='Paket aqiqah hemat untuk syukuran sederhana'),
     dict(badge='LENGKAP', headline='Paket Aqiqah Lengkap',
          subtitle='Dimasak, dikemas, dan diantar. Anak laki-laki 2 ekor, perempuan 1 ekor.',
@@ -45,13 +45,13 @@ PROMO_SLIDES = [
          alt='Paket aqiqah lengkap dengan layanan antar'),
     dict(badge='FAVORIT', headline='Sate Kambing Empuk',
          subtitle='Daging empuk bumbu kacang, dibakar arang kelapa.',
-         price=38000, unit='/10 tusuk', cta='Pesan Sekarang',
-         cta_endpoint='main.detail_produk', img='img/assets4.png',
+         price=38000, unit='/10 tusuk', cta='Lihat Produk',
+         cta_endpoint='main.produk', img='img/assets4.png',
          alt='Sate kambing empuk dengan bumbu kacang'),
     dict(badge='SPESIAL', headline='Kambing Guling Utuh',
          subtitle='Panggang utuh untuk pesta dan syukuran besar.',
-         price=2450000, unit='/ekor', cta='Pesan Sekarang',
-         cta_endpoint='main.detail_produk', img='img/assets1.png',
+         price=2450000, unit='/ekor', cta='Lihat Produk',
+         cta_endpoint='main.produk', img='img/assets1.png',
          alt='Kambing guling utuh siap saji'),
 ]
 
@@ -94,6 +94,7 @@ def produk():
     # Convert DB products to dict format for template compatibility
     def product_to_dict(p):
         return dict(
+            id=p.id,
             name=p.name,
             desc=p.description or '',
             price=p.price,
@@ -114,14 +115,199 @@ def produk():
                            all_products=all_products)
 
 
-@bp.route('/detail-produk')
-def detail_produk():
-    return render_template('detail-produk.html')
+@bp.route('/detail-produk/<int:id>')
+def detail_produk(id):
+    product = Product.query.filter_by(id=id, is_active=True).first_or_404()
+    
+    # Get related products (same menu type, excluding current)
+    related_products = Product.query.filter(
+        Product.menu_type_id == product.menu_type_id,
+        Product.is_active == True,
+        Product.id != product.id
+    ).limit(4).all()
+    
+    # Get reviews for this product
+    reviews = Review.query.filter_by(product_id=product.id).order_by(Review.created_at.desc()).all()
+    
+    # Calculate average rating
+    avg_rating = 0
+    if reviews:
+        avg_rating = sum(r.rating for r in reviews) / len(reviews)
+    
+    return render_template('detail-produk.html', 
+                           product=product,
+                           related_products=related_products,
+                           reviews=reviews,
+                           avg_rating=avg_rating)
 
 
 @bp.route('/checkout')
 def checkout():
     return render_template('checkout.html')
+
+
+# --- Cart Routes ---
+
+def _get_cart():
+    """Get cart from session, initialize if not exists."""
+    if 'cart' not in session:
+        session['cart'] = {}
+    return session['cart']
+
+
+def _save_cart(cart):
+    """Save cart to session and mark modified."""
+    session['cart'] = cart
+    session.modified = True
+
+
+@bp.route('/keranjang')
+def cart():
+    """Display cart page with items from session."""
+    cart = _get_cart()
+    cart_items = []
+    cart_subtotal = 0
+
+    if cart:
+        product_ids = [int(pid) for pid in cart.keys()]
+        products = Product.query.filter(Product.id.in_(product_ids), Product.is_active == True).all()
+        product_map = {p.id: p for p in products}
+
+        for pid_str, qty in cart.items():
+            pid = int(pid_str)
+            product = product_map.get(pid)
+            if not product:
+                continue  # Skip deleted/inactive products
+            
+            # Limit quantity to stock
+            max_qty = product.stock if product.stock > 0 else 99
+            qty = min(qty, max_qty)
+            
+            subtotal = product.price * qty
+            cart_subtotal += subtotal
+            
+            cart_items.append({
+                'product_id': product.id,
+                'name': product.name,
+                'price': product.price,
+                'quantity': qty,
+                'subtotal': subtotal,
+                'unit': product.stock > 0 and '1 porsi' or 'Habis',
+                'stock': product.stock,
+                'image': product.image or 'img/assets1.png',
+                'menu_type': product.menu_type.name if product.menu_type else None,
+            })
+
+    cart_total = cart_subtotal  # Shipping is free
+
+    return render_template('cart.html',
+                           cart_items=cart_items,
+                           cart_subtotal=cart_subtotal,
+                           cart_total=cart_total)
+
+
+@bp.route('/keranjang/tambah', methods=['GET', 'POST'])
+def cart_add():
+    """Add product to cart (from detail page or product listing)."""
+    if request.method == 'POST':
+        product_id = request.form.get('product_id', type=int)
+        quantity = request.form.get('quantity', 1, type=int)
+    else:
+        product_id = request.args.get('product_id', type=int)
+        quantity = request.args.get('quantity', 1, type=int)
+
+    if not product_id:
+        flash('Produk tidak valid.', 'error')
+        return redirect(request.referrer or url_for('main.produk'))
+
+    product = Product.query.filter_by(id=product_id, is_active=True).first()
+    if not product:
+        flash('Produk tidak ditemukan.', 'error')
+        return redirect(request.referrer or url_for('main.produk'))
+
+    if product.stock > 0 and quantity > product.stock:
+        flash(f'Stok tersedia hanya {product.stock}.', 'error')
+        return redirect(request.referrer or url_for('main.detail_produk', id=product_id))
+
+    cart = _get_cart()
+    pid_str = str(product_id)
+    current_qty = cart.get(pid_str, 0)
+    new_qty = current_qty + quantity
+
+    # Limit to stock
+    max_qty = product.stock if product.stock > 0 else 99
+    if new_qty > max_qty:
+        new_qty = max_qty
+
+    cart[pid_str] = new_qty
+    _save_cart(cart)
+
+    flash(f'{product.name} ditambahkan ke keranjang.', 'success')
+    return redirect(url_for('main.cart'))
+
+
+@bp.route('/keranjang/update', methods=['POST'])
+def cart_update():
+    """Update cart quantities or remove items."""
+    cart = _get_cart()
+
+    # Cart template sends name="clear" value="1"; keep action=clear for older clients.
+    if request.form.get('clear') or request.form.get('action') == 'clear':
+        _save_cart({})
+        flash('Keranjang dikosongkan.', 'success')
+        return redirect(url_for('main.cart'))
+
+    # Handle remove button
+    remove_id = request.form.get('remove')
+    if remove_id:
+        # Cart keys are strings, but form value might be int or string
+        pid_str = str(remove_id)
+        if pid_str in cart:
+            product = Product.query.get(int(pid_str))
+            name = product.name if product else 'Produk'
+            del cart[pid_str]
+            _save_cart(cart)
+            flash(f'{name} dihapus dari keranjang.', 'success')
+        return redirect(url_for('main.cart'))
+
+    # Update quantities from inputs (quantities[pid] fields)
+    updated = False
+    for pid_str, qty_str in request.form.items():
+        if pid_str.startswith('quantities[') and pid_str.endswith(']'):
+            pid = pid_str[11:-1]  # Extract product_id from 'quantities[ID]'
+            try:
+                qty = int(qty_str)
+                if qty > 0:
+                    product = Product.query.get(int(pid))
+                    if product:
+                        max_qty = product.stock if product.stock > 0 else 99
+                        qty = min(qty, max_qty)
+                        cart[pid] = qty
+                        updated = True
+            except (ValueError, TypeError):
+                pass
+
+    if updated:
+        _save_cart(cart)
+        flash('Keranjang diperbarui.', 'success')
+
+    return redirect(url_for('main.cart'))
+
+
+@bp.route('/keranjang/hapus/<int:product_id>', methods=['POST'])
+def cart_remove(product_id):
+    """Remove single item from cart."""
+    cart = _get_cart()
+    pid_str = str(product_id)
+    
+    if pid_str in cart:
+        product = Product.query.get(product_id)
+        name = product.name if product else 'Produk'
+        del cart[pid_str]
+        _save_cart(cart)
+        flash(f'{name} dihapus dari keranjang.', 'success')
+    
+    return redirect(url_for('main.cart'))
 
 
 @bp.route('/tentang')

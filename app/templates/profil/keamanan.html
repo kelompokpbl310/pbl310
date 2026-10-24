@@ -33,6 +33,7 @@
             <p class="text-sm text-ink/60">Ubah password Anda. Gunakan password yang kuat dan unik.</p>
 
             <form method="POST" action="{{ url_for('main.profil_password') }}" class="space-y-4 rounded-xl border border-maroon/15 bg-white p-6 transition-shadow hover:shadow-md">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <div>
                 <label for="current_password" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Password Saat Ini</label>
                 <input id="current_password" name="current_password" type="password" required autocomplete="current-password" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />

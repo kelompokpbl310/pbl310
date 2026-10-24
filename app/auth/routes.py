@@ -89,7 +89,7 @@ def register():
     return render_template('register.html')
 
 
-@bp.route('/logout', methods=['GET', 'POST'])
+@bp.route('/logout', methods=['POST'])
 @login_required
 def logout():
     user_id = current_user.id

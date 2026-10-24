@@ -43,26 +43,31 @@
         >
           <a
             href="{{ url_for('main.index') }}"
-            class="underline-offset-8 decoration-2 transition hover:text-white hover:underline {% if request.endpoint == 'index' %}text-white underline{% endif %}"
+            class="underline-offset-8 decoration-2 transition hover:text-white hover:underline {% if request.endpoint == 'main.index' %}text-white underline{% endif %}"
             >Beranda</a
           ><a
             href="{{ url_for('main.produk') }}"
-            class="underline-offset-8 decoration-2 transition hover:text-white hover:underline {% if request.endpoint in ['produk', 'detail_produk'] %}text-white underline{% endif %}"
+            class="underline-offset-8 decoration-2 transition hover:text-white hover:underline {% if request.endpoint in ['main.produk', 'main.detail_produk'] %}text-white underline{% endif %}"
             >Produk</a
           ><a
             href="{{ url_for('main.tentang') }}"
-            class="underline-offset-8 decoration-2 transition hover:text-white hover:underline {% if request.endpoint == 'tentang' %}text-white underline{% endif %}"
+            class="underline-offset-8 decoration-2 transition hover:text-white hover:underline {% if request.endpoint == 'main.tentang' %}text-white underline{% endif %}"
             >Tentang Kami</a
           >
         </nav>
         <div class="flex items-center gap-3">
           {% if current_user.is_authenticated %}
           <a
-            href="{{ url_for('main.checkout') }}"
+            href="{{ url_for('main.cart') }}"
             aria-label="Keranjang"
-            class="flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10"
-            ><i class="fa-solid fa-cart-shopping fa-lg"></i
-          ></a>
+            class="relative flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10"
+          >
+            <i class="fa-solid fa-cart-shopping fa-lg"></i>
+            {% set cart_count = session.get('cart', {})|length if session.get('cart') else 0 %}
+            {% if cart_count > 0 %}
+            <span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-maroon">{{ cart_count }}</span>
+            {% endif %}
+          </a>
           {% endif %}
           {% if current_user.is_authenticated %}
           <!-- Profile Dropdown -->
@@ -128,6 +133,7 @@
               {% endif %}
               <hr class="my-1 border-maroon/20" />
               <form action="{{ url_for('auth.logout') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button
                   type="submit"
                   class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-white"

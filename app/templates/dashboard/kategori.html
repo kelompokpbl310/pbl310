@@ -35,6 +35,7 @@
             <td class="px-5 py-3"><div class="flex justify-end gap-2">
               <a href="{{ url_for('admin.kategori_edit', id=cat.id) }}" class="rounded-md border border-maroon bg-transparent  px-3 py-1.5 text-xs font-bold text-maroon hover:bg-maroon-dark hover:text-white transition-colors">Ubah</a>
               <form method="POST" action="{{ url_for('admin.kategori_delete', id=cat.id) }}" onsubmit="return confirm('Hapus kategori ini?')" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="rounded-md bg-maroon px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700 transition-colors">Hapus</button>
               </form>
             </div></td>
