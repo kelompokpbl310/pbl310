@@ -1,10 +1,10 @@
 """Main Routes - Public Pages"""
 
-from flask import render_template, url_for, request, redirect, flash, session
+from flask import render_template, url_for, request, redirect, flash, session, jsonify
 from flask_login import login_required, current_user
 from app.main import bp
 from app import db
-from app.models import Product, User, Category, MenuType, Review
+from app.models import Product, User, Category, MenuType, Review, CartItem
 from werkzeug.utils import secure_filename
 from PIL import Image
 import os
@@ -148,55 +148,36 @@ def checkout():
 
 # --- Cart Routes ---
 
-def _get_cart():
-    """Get cart from session, initialize if not exists."""
-    if 'cart' not in session:
-        session['cart'] = {}
-    return session['cart']
-
-
-def _save_cart(cart):
-    """Save cart to session and mark modified."""
-    session['cart'] = cart
-    session.modified = True
-
-
 @bp.route('/keranjang')
+@login_required
 def cart():
-    """Display cart page with items from session."""
-    cart = _get_cart()
+    """Display cart page with items from database."""
+    cart_items_db = CartItem.query.filter_by(user_id=current_user.id).join(Product).filter(Product.is_active == True).all()
     cart_items = []
     cart_subtotal = 0
 
-    if cart:
-        product_ids = [int(pid) for pid in cart.keys()]
-        products = Product.query.filter(Product.id.in_(product_ids), Product.is_active == True).all()
-        product_map = {p.id: p for p in products}
+    for item in cart_items_db:
+        product = item.product
+        qty = item.quantity
 
-        for pid_str, qty in cart.items():
-            pid = int(pid_str)
-            product = product_map.get(pid)
-            if not product:
-                continue  # Skip deleted/inactive products
-            
-            # Limit quantity to stock
-            max_qty = product.stock if product.stock > 0 else 99
-            qty = min(qty, max_qty)
-            
-            subtotal = product.price * qty
-            cart_subtotal += subtotal
-            
-            cart_items.append({
-                'product_id': product.id,
-                'name': product.name,
-                'price': product.price,
-                'quantity': qty,
-                'subtotal': subtotal,
-                'unit': product.stock > 0 and '1 porsi' or 'Habis',
-                'stock': product.stock,
-                'image': product.image or 'img/assets1.png',
-                'menu_type': product.menu_type.name if product.menu_type else None,
-            })
+        # Limit quantity to stock
+        max_qty = product.stock if product.stock > 0 else 99
+        qty = min(qty, max_qty)
+        
+        subtotal = product.price * qty
+        cart_subtotal += subtotal
+        
+        cart_items.append({
+            'product_id': product.id,
+            'name': product.name,
+            'price': product.price,
+            'quantity': qty,
+            'subtotal': subtotal,
+            'unit': product.stock > 0 and '1 porsi' or 'Habis',
+            'stock': product.stock,
+            'image': product.image or 'img/assets1.png',
+            'menu_type': product.menu_type.name if product.menu_type else None,
+        })
 
     cart_total = cart_subtotal  # Shipping is free
 
@@ -206,15 +187,12 @@ def cart():
                            cart_total=cart_total)
 
 
-@bp.route('/keranjang/tambah', methods=['GET', 'POST'])
+@bp.route('/keranjang/tambah', methods=['POST'])
+@login_required
 def cart_add():
-    """Add product to cart (from detail page or product listing)."""
-    if request.method == 'POST':
-        product_id = request.form.get('product_id', type=int)
-        quantity = request.form.get('quantity', 1, type=int)
-    else:
-        product_id = request.args.get('product_id', type=int)
-        quantity = request.args.get('quantity', 1, type=int)
+    """Add product to cart (from detail page or product listing). POST only."""
+    product_id = request.form.get('product_id', type=int)
+    quantity = request.form.get('quantity', 1, type=int)
 
     if not product_id:
         flash('Produk tidak valid.', 'error')
@@ -229,82 +207,108 @@ def cart_add():
         flash(f'Stok tersedia hanya {product.stock}.', 'error')
         return redirect(request.referrer or url_for('main.detail_produk', id=product_id))
 
-    cart = _get_cart()
-    pid_str = str(product_id)
-    current_qty = cart.get(pid_str, 0)
-    new_qty = current_qty + quantity
-
-    # Limit to stock
-    max_qty = product.stock if product.stock > 0 else 99
-    if new_qty > max_qty:
-        new_qty = max_qty
-
-    cart[pid_str] = new_qty
-    _save_cart(cart)
+    # Find or create CartItem for current user
+    cart_item = CartItem.query.filter_by(user_id=current_user.id, product_id=product_id).first()
+    
+    if cart_item:
+        new_qty = cart_item.quantity + quantity
+        max_qty = product.stock if product.stock > 0 else 99
+        cart_item.quantity = min(new_qty, max_qty)
+    else:
+        max_qty = product.stock if product.stock > 0 else 99
+        cart_item = CartItem(
+            user_id=current_user.id,
+            product_id=product_id,
+            quantity=min(quantity, max_qty)
+        )
+        db.session.add(cart_item)
+    
+    db.session.commit()
 
     flash(f'{product.name} ditambahkan ke keranjang.', 'success')
     return redirect(url_for('main.cart'))
 
 
 @bp.route('/keranjang/update', methods=['POST'])
+@login_required
 def cart_update():
-    """Update cart quantities or remove items."""
-    cart = _get_cart()
+    """Update cart quantities, remove items, or clear cart."""
+    is_autosave = request.form.get('update') == '1'
 
-    # Cart template sends name="clear" value="1"; keep action=clear for older clients.
-    if request.form.get('clear') or request.form.get('action') == 'clear':
-        _save_cart({})
+    # Explicit clear action (clear button)
+    if request.form.get('clear') == '1':
+        CartItem.query.filter_by(user_id=current_user.id).delete()
+        db.session.commit()
         flash('Keranjang dikosongkan.', 'success')
+        if is_autosave:
+            return jsonify(ok=True, cart_count=0, cart_subtotal=0, cart_total=0)
         return redirect(url_for('main.cart'))
 
-    # Handle remove button
+    # Explicit remove action (trash button)
     remove_id = request.form.get('remove')
     if remove_id:
-        # Cart keys are strings, but form value might be int or string
-        pid_str = str(remove_id)
-        if pid_str in cart:
-            product = Product.query.get(int(pid_str))
-            name = product.name if product else 'Produk'
-            del cart[pid_str]
-            _save_cart(cart)
-            flash(f'{name} dihapus dari keranjang.', 'success')
+        try:
+            product_id = int(remove_id)
+            cart_item = CartItem.query.filter_by(user_id=current_user.id, product_id=product_id).first()
+            if cart_item:
+                name = cart_item.product.name if cart_item.product else 'Produk'
+                db.session.delete(cart_item)
+                db.session.commit()
+                flash(f'{name} dihapus dari keranjang.', 'success')
+        except (ValueError, TypeError):
+            pass
+        if is_autosave:
+            cart_count = CartItem.query.filter_by(user_id=current_user.id).count()
+            return jsonify(ok=True, cart_count=cart_count)
         return redirect(url_for('main.cart'))
 
-    # Update quantities from inputs (quantities[pid] fields)
+    # Normal quantity update (autosave or explicit form submit)
     updated = False
-    for pid_str, qty_str in request.form.items():
-        if pid_str.startswith('quantities[') and pid_str.endswith(']'):
-            pid = pid_str[11:-1]  # Extract product_id from 'quantities[ID]'
+    for key, qty_str in request.form.items():
+        if key.startswith('quantities[') and key.endswith(']'):
             try:
+                pid = int(key[11:-1])  # Extract product_id from 'quantities[ID]'
                 qty = int(qty_str)
                 if qty > 0:
-                    product = Product.query.get(int(pid))
+                    product = Product.query.get(pid)
                     if product:
                         max_qty = product.stock if product.stock > 0 else 99
                         qty = min(qty, max_qty)
-                        cart[pid] = qty
-                        updated = True
+                        cart_item = CartItem.query.filter_by(user_id=current_user.id, product_id=pid).first()
+                        if cart_item:
+                            cart_item.quantity = qty
+                            updated = True
             except (ValueError, TypeError):
                 pass
 
     if updated:
-        _save_cart(cart)
-        flash('Keranjang diperbarui.', 'success')
+        db.session.commit()
+        # Only flash for explicit form submissions, not autosave
+        if not is_autosave:
+            flash('Keranjang diperbarui.', 'success')
+
+    # Recalculate totals for response
+    cart_items = CartItem.query.filter_by(user_id=current_user.id).join(Product).all()
+    cart_count = len(cart_items)
+    cart_subtotal = sum(item.quantity * item.product.price for item in cart_items)
+    cart_total = cart_subtotal  # shipping is free
+
+    if is_autosave:
+        return jsonify(ok=True, cart_count=cart_count, cart_subtotal=cart_subtotal, cart_total=cart_total)
 
     return redirect(url_for('main.cart'))
 
 
 @bp.route('/keranjang/hapus/<int:product_id>', methods=['POST'])
+@login_required
 def cart_remove(product_id):
     """Remove single item from cart."""
-    cart = _get_cart()
-    pid_str = str(product_id)
+    cart_item = CartItem.query.filter_by(user_id=current_user.id, product_id=product_id).first()
     
-    if pid_str in cart:
-        product = Product.query.get(product_id)
-        name = product.name if product else 'Produk'
-        del cart[pid_str]
-        _save_cart(cart)
+    if cart_item:
+        name = cart_item.product.name if cart_item.product else 'Produk'
+        db.session.delete(cart_item)
+        db.session.commit()
         flash(f'{name} dihapus dari keranjang.', 'success')
     
     return redirect(url_for('main.cart'))

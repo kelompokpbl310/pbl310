@@ -377,15 +377,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Flash message auto-dismiss
-  $$("[data-flash]").forEach((el) => {
-    const delay = Number(el.dataset.flash) || 5000;
+  const flashContainer = document.querySelector("[data-flash-container]");
+  if (flashContainer) {
+    const delay = 5000;
     setTimeout(() => {
-      el.style.transition = "opacity 300ms ease, transform 300ms ease";
-      el.style.opacity = "0";
-      el.style.transform = "translateY(-8px)";
-      setTimeout(() => el.remove(), 300);
+      flashContainer.style.transition = "opacity 300ms ease, transform 300ms ease";
+      flashContainer.style.opacity = "0";
+      flashContainer.style.transform = "translateY(-8px)";
+      setTimeout(() => flashContainer.remove(), 300);
     }, delay);
-  });
+  }
 
   // Product search
   const searchInput = $("#product-search");
@@ -443,8 +444,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const rows = [...form.querySelectorAll("[data-cart-item]")];
   const sumEl = document.querySelector("[data-cart-sum]");
   const totalEl = document.querySelector("[data-cart-total]");
+  const badge = document.querySelector("[data-cart-badge]");
   const rupiah = (n) => "Rp " + n.toLocaleString("id-ID");
   let saveTimer = null;
+  let saveSeq = 0;
 
   const clampQty = (input) => {
     const min = parseInt(input.min, 10) || 1;
@@ -471,17 +474,51 @@ document.addEventListener("DOMContentLoaded", () => {
   const scheduleSave = () => {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
-      // Persist the clamped values, then let the server re-render the cart.
+      // Persist the clamped values, then fetch the update.
       rows.forEach((row) => {
         const input = row.querySelector("[data-cart-qty]");
         if (input) input.value = clampQty(input);
       });
-      if (typeof form.requestSubmit === "function") form.requestSubmit();
-      else form.submit();
+      doSave();
     }, 700);
   };
 
-  form.addEventListener("submit", () => clearTimeout(saveTimer));
+  const doSave = () => {
+    const seq = ++saveSeq;
+    const formData = new FormData(form);
+    formData.set("update", "1");
+    fetch(form.action, { method: "POST", body: formData })
+      .then((resp) => {
+        if (!resp.ok) throw new Error("Network " + resp.status);
+        return resp.json();
+      })
+      .then((data) => {
+        if (seq !== saveSeq) return; // stale response
+        if (data.ok) {
+          if (badge && data.cart_count != null) badge.textContent = data.cart_count;
+          if (sumEl && data.cart_subtotal != null) sumEl.textContent = "Rp " + data.cart_subtotal.toLocaleString("id-ID");
+          if (totalEl && data.cart_total != null) totalEl.textContent = "Rp " + data.cart_total.toLocaleString("id-ID");
+        } else {
+          console.error("Autosave failed:", data);
+        }
+      })
+      .catch((err) => {
+        console.error("Autosave error:", err);
+        // keep visible quantity; do not remove item
+      });
+  };
+
+  // Prevent Enter from submitting the whole form
+  form.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.matches("[data-cart-qty]")) {
+      e.preventDefault();
+      const input = e.target;
+      input.value = clampQty(input);
+      input.blur(); // trigger change normalization
+      recalc();
+      scheduleSave();
+    }
+  });
 
   rows.forEach((row) => {
     const input = row.querySelector("[data-cart-qty]");

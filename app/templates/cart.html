@@ -2,27 +2,6 @@
 {% block title %}Keranjang | Catering Batam{% endblock %}
 {% block description %}Keranjang belanja catering aqiqah Anda.{% endblock %}
 {% block content %}
-<!-- Flash Messages -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-  <section class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20 py-4">
-    <div class="space-y-2" data-flash="5000">
-      {% for category, message in messages %}
-      <div class="rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-3
-        {% if category == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200
-        {% elif category == 'error' %}bg-red-50 text-red-800 border border-red-200
-        {% else %}bg-gold/10 text-gold border border-gold/30{% endif %}">
-        {% if category == 'success' %}<i class="fa-solid fa-circle-check"></i>
-        {% elif category == 'error' %}<i class="fa-solid fa-circle-exclamation"></i>
-        {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
-        {{ message }}
-      </div>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
-{% endwith %}
-
 <!-- Hero / Breadcrumb -->
 <section class="bg-cream">
   <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20 flex items-end justify-between gap-6 pt-10 lg:pt-12">
@@ -84,7 +63,7 @@
             <div class="flex items-center justify-between gap-4 sm:justify-end">
               <div class="flex items-center overflow-hidden rounded-lg border-2 border-maroon bg-white">
                 <button type="button" data-cart-minus class="h-9 w-9 text-lg font-bold text-maroon hover:bg-cream" aria-label="Kurangi">−</button>
-                <input data-cart-qty type="number" name="quantities[{{ item.product_id }}]" min="1" max="{{ item.stock if item.stock > 0 else 99 }}" value="{{ item.quantity }}" class="w-12 border-0 bg-transparent text-center text-sm font-bold text-maroon focus:outline-none focus:ring-0" aria-label="Jumlah">
+                <input data-cart-qty type="number" name="quantities[{{ item.product_id }}]" min="1" max="{{ item.stock if item.stock > 0 else 99 }}" value="{{ item.quantity }}" class="w-12 border-0 bg-transparent text-center text-sm font-bold text-maroon focus:outline-none focus:ring-0 cart-quantity-input" aria-label="Jumlah">
                 <button type="button" data-cart-plus class="h-9 w-9 text-lg font-bold text-maroon hover:bg-cream" aria-label="Tambah">+</button>
               </div>
               <p class="w-28 whitespace-nowrap text-right text-sm font-semibold text-maroon" data-cart-subtotal>Rp {{ "{:,.0f}".format(item.subtotal).replace(",", ".") }}</p>

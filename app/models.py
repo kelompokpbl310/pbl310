@@ -131,3 +131,23 @@ class Review(db.Model):
 
     def __repr__(self):
         return f'<Review {self.id}>'
+
+
+class CartItem(db.Model):
+    __tablename__ = 'cart_items'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
+
+    user = db.relationship('User', backref='cart_items')
+    product = db.relationship('Product')
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'product_id', name='uq_cart_user_product'),
+    )
+
+    def __repr__(self):
+        return f'<CartItem user={self.user_id} product={self.product_id} qty={self.quantity}>'
