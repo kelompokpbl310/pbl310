@@ -63,13 +63,11 @@
             class="relative flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10"
           >
             <i class="fa-solid fa-cart-shopping fa-lg"></i>
-            {% set cart_count = session.get('cart', {})|length if session.get('cart') else 0 %}
+            {% set cart_count = current_user.cart_items|length %}
             {% if cart_count > 0 %}
-            <span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-maroon">{{ cart_count }}</span>
+            <span data-cart-badge class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-maroon">{{ cart_count }}</span>
             {% endif %}
           </a>
-          {% endif %}
-          {% if current_user.is_authenticated %}
           <!-- Profile Dropdown -->
           <div class="relative" id="profile-dropdown">
             <button
@@ -120,7 +118,7 @@
                 <i class="fa-solid fa-clock-rotate-left fa-lg"></i>
                 Riwayat Pesanan
               </a>
-              {% if current_user.is_authenticated and current_user.role == 'admin' %}
+              {% if current_user.role == 'admin' %}
               <hr class="my-1 border-maroon/20" />
               <a
                 href="{{ url_for('admin.dashboard') }}"
@@ -175,6 +173,7 @@
       </div>
       <div class="h-0.5 bg-gold" aria-hidden="true"></div>
     </header>
+    {% include "_flash_messages.html" %}
     <main>{% block content %}{% endblock %}</main>
     <div class="h-0.5 bg-gold" aria-hidden="true"></div>
     <footer

@@ -1,0 +1,23 @@
+{# Flash Messages Partial - reusable across all layouts #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <section class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20 py-4" data-flash-container>
+    <div class="space-y-2">
+      {% for category, message in messages %}
+      <div class="rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-3
+        {% if category == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200
+        {% elif category == 'error' or category == 'danger' %}bg-red-50 text-red-800 border border-red-200
+        {% elif category == 'warning' %}bg-amber-50 text-amber-800 border border-amber-200
+        {% else %}bg-gold/10 text-gold border border-gold/30{% endif %}"
+        data-flash-message>
+        {% if category == 'success' %}<i class="fa-solid fa-circle-check"></i>
+        {% elif category == 'error' or category == 'danger' %}<i class="fa-solid fa-circle-exclamation"></i>
+        {% elif category == 'warning' %}<i class="fa-solid fa-triangle-exclamation"></i>
+        {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+{% endwith %}

@@ -15,17 +15,6 @@
           </p>
           <form method="POST" class="space-y-4">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-              {% if messages %}
-                <div class="space-y-2" data-flash="5000">
-                  {% for category, message in messages %}
-                    <div class="rounded-xl px-3 py-2 text-sm font-medium bg-transparent border-2 border-cream text-cream">
-                      {{ message }}
-                    </div>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            {% endwith %}
             <div class="text-left">
               <label for="reg-name" class="sr-only">Nama Lengkap</label>
               <input

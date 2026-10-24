@@ -13,18 +13,6 @@
       <section class="py-8 bg-cream min-h-screen">
         <div class="w-full max-w-4xl px-6 sm:px-12 lg:px-20">
           <div class="p-6 sm:p-8 lg:p-10">
-          {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-              <div class="space-y-2 mb-6" data-flash="5000">
-                {% for category, message in messages %}
-                  <div class="rounded-xl px-3 py-2 text-sm font-medium bg-transparent border-2 border-maroon text-maroon">
-                    {{ message }}
-                  </div>
-                {% endfor %}
-              </div>
-            {% endif %}
-          {% endwith %}
-
           {% include 'profil/mobile_nav.html' %}
 
           <!-- KEAMANAN CONTENT -->
