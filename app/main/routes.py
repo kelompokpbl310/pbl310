@@ -4,11 +4,12 @@ from flask import render_template, url_for, request, redirect, flash, session, j
 from flask_login import login_required, current_user
 from app.main import bp
 from app import db
-from app.models import Product, User, Category, MenuType, Review, CartItem
+from app.models import Product, User, Category, MenuType, Review, CartItem, PromoBanner
 from werkzeug.utils import secure_filename
 from PIL import Image
 import os
 import uuid
+from datetime import datetime
 
 
 # Sample products for catalog (static sample data until DB is seeded)
@@ -23,36 +24,6 @@ SAMPLE_PRODUCTS = [
     dict(name='Paket Prasmanan Aqiqah', desc='Paket lengkap untuk syukuran bersamaan', price=2750000, unit='paket', rating='5,0', reviews=19, img='img/assets1.png', category='Prasmanan'),
     dict(name='Gulai Kambing Muda Empuk', desc='Daging muda empuk, kuah gulai pekat rempah', price=43000, unit='1 porsi', rating='4,9', reviews=33, img='img/assets3.png', category='Gulai'),
     dict(name='Tongseng Kambing Kuah Kuning', desc='Tongseng gurih dengan kol dan cabai segar', price=41000, unit='1 porsi', rating='4,8', reviews=30, img='img/assets4.png', category='Gulai'),
-]
-
-# Promo slides data (static for now)
-PROMO_SLIDES = [
-    dict(badge='TERLARIS', headline='Nasi Kebuli Kambing',
-         subtitle='Menu favorit pelanggan aqiqah. Bumbu rempah, daging empuk.',
-         price=40000, unit='/box', cta='Lihat Produk',
-         cta_endpoint='main.produk', img='img/assets2.png',
-         alt='Nasi kebuli kambing dengan lauk, menu aqiqah terlaris'),
-    dict(badge='HEMAT', headline='Paket Aqiqah Hemat',
-         subtitle='Pas untuk syukuran sederhana, tetap lezat dan berkesan.',
-         price=38000, unit='', cta='Lihat Produk',
-         cta_endpoint='main.produk', img='img/banners/paket-hemat.png',
-         alt='Paket aqiqah hemat untuk syukuran sederhana'),
-    dict(badge='LENGKAP', headline='Paket Aqiqah Lengkap',
-         subtitle='Dimasak, dikemas, dan diantar. Anak laki-laki 2 ekor, perempuan 1 ekor.',
-         price=2750000, unit='', cta='Lihat Paket',
-         cta_endpoint='main.produk', cta_anchor='katalog',
-         img='img/banners/paket-lengkap.png',
-         alt='Paket aqiqah lengkap dengan layanan antar'),
-    dict(badge='FAVORIT', headline='Sate Kambing Empuk',
-         subtitle='Daging empuk bumbu kacang, dibakar arang kelapa.',
-         price=38000, unit='/10 tusuk', cta='Lihat Produk',
-         cta_endpoint='main.produk', img='img/assets4.png',
-         alt='Sate kambing empuk dengan bumbu kacang'),
-    dict(badge='SPESIAL', headline='Kambing Guling Utuh',
-         subtitle='Panggang utuh untuk pesta dan syukuran besar.',
-         price=2450000, unit='/ekor', cta='Lihat Produk',
-         cta_endpoint='main.produk', img='img/assets1.png',
-         alt='Kambing guling utuh siap saji'),
 ]
 
 
@@ -73,14 +44,35 @@ def index():
 
 @bp.route('/produk')
 def produk():
+    # Query active promo banners within date window
+    now = datetime.utcnow()
+    promo_banners = PromoBanner.query.filter(
+        PromoBanner.is_active == True,
+        (PromoBanner.starts_at == None) | (PromoBanner.starts_at <= now),
+        (PromoBanner.ends_at == None) | (PromoBanner.ends_at >= now)
+    ).order_by(PromoBanner.display_order, PromoBanner.id).all()
+    
     slides = []
-    for s in PROMO_SLIDES:
-        item = dict(s)
-        if s.get('cta_anchor'):
-            item['cta_url'] = url_for(s['cta_endpoint'], _anchor=s['cta_anchor'])
+    for b in promo_banners:
+        # Build CTA link on the server
+        if b.product_id and b.product and b.product.is_active:
+            cta_url = url_for('main.detail_produk', id=b.product_id)
+        elif b.cta_url:
+            cta_url = b.cta_url
         else:
-            item['cta_url'] = url_for(s['cta_endpoint'])
-        slides.append(item)
+            cta_url = url_for('main.produk')
+        
+        slides.append({
+            'badge': b.badge,
+            'headline': b.headline,
+            'subtitle': b.subtitle,
+            'price': b.price,
+            'unit': b.unit,
+            'cta_label': b.cta_label,
+            'cta_url': cta_url,
+            'image': b.image,
+            'alt_text': b.alt_text,
+        })
     
     # Get active menu types for filter tabs
     menu_types = MenuType.query.filter_by(is_active=True).order_by(MenuType.display_order).all()

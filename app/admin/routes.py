@@ -4,24 +4,27 @@ from functools import wraps
 from flask import render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from app import db
-from app.models import Category, Product
+from app.models import Category, Product, PromoBanner
 from app.admin import bp
 from werkzeug.utils import secure_filename
 from PIL import Image
 import os
 import uuid
+from urllib.parse import urlparse
+from datetime import datetime
 
 
 # Image upload constants
 MAX_FILE_SIZE = 2 * 1024 * 1024  # 2MB
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 UPLOAD_FOLDER = 'static/uploads/products'
+PROMO_UPLOAD_FOLDER = 'static/uploads/promo'
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def save_product_image(file, product_id=None):
-    """Process and save product image as WebP, return relative path or None."""
+def save_image(file, folder, prefix='item'):
+    """Process and save image as WebP, return relative path or None."""
     if not file or not file.filename:
         return None
     if not allowed_file(file.filename):
@@ -59,11 +62,8 @@ def save_product_image(file, product_id=None):
         # Generate unique filename
         ext = 'webp'
         unique_id = uuid.uuid4().hex[:8]
-        if product_id:
-            filename = f'product_{product_id}_{unique_id}.{ext}'
-        else:
-            filename = f'product_new_{unique_id}.{ext}'
-        filepath = os.path.join(current_app.root_path, UPLOAD_FOLDER, filename)
+        filename = f'{prefix}_{unique_id}.{ext}'
+        filepath = os.path.join(current_app.root_path, folder, filename)
         
         # Ensure upload directory exists
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
@@ -71,9 +71,31 @@ def save_product_image(file, product_id=None):
         # Save as WebP
         img.save(filepath, 'WEBP', quality=85, optimize=True)
         
-        return f'{UPLOAD_FOLDER}/{filename}'
+        return f'{folder}/{filename}'
     except Exception as e:
         raise ValueError('Gagal memproses gambar. Pastikan file adalah gambar valid.')
+
+
+def save_product_image(file, product_id=None):
+    """Process and save product image as WebP, return relative path or None."""
+    return save_image(file, UPLOAD_FOLDER, f'product_{product_id}' if product_id else 'product_new')
+
+
+def save_promo_image(file, banner_id=None):
+    """Process and save promo banner image as WebP, return relative path or None."""
+    return save_image(file, PROMO_UPLOAD_FOLDER, f'promo_{banner_id}' if banner_id else 'promo_new')
+
+
+def validate_cta_url(url):
+    """Validate cta_url - allow only relative paths starting with / or http/https URLs."""
+    if not url:
+        return True, None
+    parsed = urlparse(url)
+    if parsed.scheme in ('', 'http', 'https'):
+        if parsed.scheme == '' and not url.startswith('/'):
+            return False, 'URL relatif harus dimulai dengan "/"'
+        return True, None
+    return False, 'Skema URL tidak diizinkan. Gunakan URL relatif (awali dengan "/") atau https://'
 
 
 def admin_required(f):
@@ -360,3 +382,208 @@ def ulasan():
 @admin_required
 def pengaturan():
     return render_template('dashboard/pengaturan.html')
+
+
+# --- Promo Banner CRUD ---
+@bp.route('/promo')
+@login_required
+@admin_required
+def promo_list():
+    banners = PromoBanner.query.order_by(PromoBanner.display_order, PromoBanner.id).all()
+    return render_template('dashboard/promo_list.html', banners=banners)
+
+
+@bp.route('/promo/create', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def promo_create():
+    products = Product.query.filter_by(is_active=True).order_by(Product.name).all()
+    if request.method == 'POST':
+        headline = request.form.get('headline', '').strip()
+        subtitle = request.form.get('subtitle', '').strip()
+        badge = request.form.get('badge', '').strip()
+        price = request.form.get('price', type=int)
+        unit = request.form.get('unit', '').strip()
+        cta_label = request.form.get('cta_label', '').strip() or 'Pesan Sekarang'
+        product_id = request.form.get('product_id', type=int)
+        cta_url = request.form.get('cta_url', '').strip()
+        display_order = request.form.get('display_order', type=int) or 0
+        is_active = bool(request.form.get('is_active'))
+        starts_at = request.form.get('starts_at')
+        ends_at = request.form.get('ends_at')
+        image = request.files.get('image')
+        
+        errors = []
+        if not headline:
+            errors.append('Judul wajib diisi.')
+        if not image or not image.filename:
+            errors.append('Gambar wajib diunggah.')
+        if price is not None and price < 0:
+            errors.append('Harga tidak valid.')
+        
+        # Validate cta_url
+        valid_url, url_error = validate_cta_url(cta_url)
+        if not valid_url:
+            errors.append(url_error)
+        
+        # Validate dates
+        if starts_at:
+            try:
+                starts_at = datetime.fromisoformat(starts_at)
+            except ValueError:
+                errors.append('Format tanggal mulai tidak valid.')
+        if ends_at:
+            try:
+                ends_at = datetime.fromisoformat(ends_at)
+            except ValueError:
+                errors.append('Format tanggal berakhir tidak valid.')
+        
+        if errors:
+            for e in errors:
+                flash(e, 'error')
+        else:
+            # Handle image upload
+            image_upload_ok = True
+            try:
+                image_path = save_promo_image(image)
+                if not image_path:
+                    errors.append('Gambar wajib diunggah.')
+                    image_upload_ok = False
+            except ValueError as e:
+                flash(str(e), 'error')
+                image_upload_ok = False
+            
+            if image_upload_ok:
+                banner = PromoBanner(
+                    headline=headline,
+                    subtitle=subtitle or None,
+                    badge=badge or None,
+                    image=image_path,
+                    alt_text=request.form.get('alt_text', '').strip() or headline,
+                    price=price,
+                    unit=unit or None,
+                    cta_label=cta_label,
+                    product_id=product_id if product_id else None,
+                    cta_url=cta_url if cta_url else None,
+                    display_order=display_order,
+                    is_active=is_active,
+                    starts_at=starts_at,
+                    ends_at=ends_at,
+                )
+                db.session.add(banner)
+                db.session.commit()
+                flash('Banner promo berhasil ditambahkan.', 'success')
+                return redirect(url_for('admin.promo_list'))
+    
+    return render_template('dashboard/promo_form.html', banner=None, products=products)
+
+
+@bp.route('/promo/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def promo_edit(id):
+    banner = PromoBanner.query.get_or_404(id)
+    products = Product.query.filter_by(is_active=True).order_by(Product.name).all()
+    if request.method == 'POST':
+        headline = request.form.get('headline', '').strip()
+        subtitle = request.form.get('subtitle', '').strip()
+        badge = request.form.get('badge', '').strip()
+        price = request.form.get('price', type=int)
+        unit = request.form.get('unit', '').strip()
+        cta_label = request.form.get('cta_label', '').strip() or 'Pesan Sekarang'
+        product_id = request.form.get('product_id', type=int)
+        cta_url = request.form.get('cta_url', '').strip()
+        display_order = request.form.get('display_order', type=int) or 0
+        is_active = bool(request.form.get('is_active'))
+        starts_at = request.form.get('starts_at')
+        ends_at = request.form.get('ends_at')
+        image = request.files.get('image')
+        
+        errors = []
+        if not headline:
+            errors.append('Judul wajib diisi.')
+        if price is not None and price < 0:
+            errors.append('Harga tidak valid.')
+        
+        # Validate cta_url
+        valid_url, url_error = validate_cta_url(cta_url)
+        if not valid_url:
+            errors.append(url_error)
+        
+        # Validate dates
+        if starts_at:
+            try:
+                starts_at = datetime.fromisoformat(starts_at)
+            except ValueError:
+                errors.append('Format tanggal mulai tidak valid.')
+        if ends_at:
+            try:
+                ends_at = datetime.fromisoformat(ends_at)
+            except ValueError:
+                errors.append('Format tanggal berakhir tidak valid.')
+        
+        if errors:
+            for e in errors:
+                flash(e, 'error')
+        else:
+            banner.headline = headline
+            banner.subtitle = subtitle or None
+            badge = badge or None
+            banner.badge = badge
+            banner.price = price
+            banner.unit = unit or None
+            banner.cta_label = cta_label
+            banner.product_id = product_id if product_id else None
+            banner.cta_url = cta_url if cta_url else None
+            banner.display_order = display_order
+            banner.is_active = is_active
+            banner.starts_at = starts_at
+            banner.ends_at = ends_at
+            banner.alt_text = request.form.get('alt_text', '').strip() or headline
+            
+            # Handle image upload (only if new file provided)
+            if image and image.filename:
+                try:
+                    # Delete old image file if exists
+                    if banner.image:
+                        old_path = os.path.join(current_app.root_path, banner.image)
+                        if os.path.exists(old_path):
+                            os.remove(old_path)
+                    
+                    image_path = save_promo_image(image, banner.id)
+                    if image_path:
+                        banner.image = image_path
+                except ValueError as e:
+                    flash(str(e), 'error')
+            
+            db.session.commit()
+            flash('Banner promo berhasil diperbarui.', 'success')
+            return redirect(url_for('admin.promo_list'))
+    return render_template('dashboard/promo_form.html', banner=banner, products=products)
+
+
+@bp.route('/promo/<int:id>/toggle', methods=['POST'])
+@login_required
+@admin_required
+def promo_toggle(id):
+    banner = PromoBanner.query.get_or_404(id)
+    banner.is_active = not banner.is_active
+    db.session.commit()
+    flash(f'Banner promo {"diaktifkan" if banner.is_active else "dinonaktifkan"}.', 'success')
+    return redirect(url_for('admin.promo_list'))
+
+
+@bp.route('/promo/<int:id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def promo_delete(id):
+    banner = PromoBanner.query.get_or_404(id)
+    # Delete image file if exists
+    if banner.image:
+        image_path = os.path.join(current_app.root_path, banner.image)
+        if os.path.exists(image_path):
+            os.remove(image_path)
+    db.session.delete(banner)
+    db.session.commit()
+    flash('Banner promo berhasil dihapus.', 'success')
+    return redirect(url_for('admin.promo_list'))

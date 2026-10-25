@@ -151,3 +151,29 @@ class CartItem(db.Model):
 
     def __repr__(self):
         return f'<CartItem user={self.user_id} product={self.product_id} qty={self.quantity}>'
+
+
+class PromoBanner(db.Model):
+    __tablename__ = 'promo_banners'
+    id = db.Column(db.Integer, primary_key=True)
+    headline = db.Column(db.String(120), nullable=False)
+    subtitle = db.Column(db.String(255), nullable=True)
+    badge = db.Column(db.String(30), nullable=True)
+    image = db.Column(db.String(255), nullable=False)  # same path convention as Product.image
+    alt_text = db.Column(db.String(150), nullable=False)
+    price = db.Column(db.Integer, nullable=True)  # store as integer, not formatted string
+    unit = db.Column(db.String(30), nullable=True)
+    cta_label = db.Column(db.String(40), nullable=False, default='Pesan Sekarang')
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
+    cta_url = db.Column(db.String(255), nullable=True)
+    display_order = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+    starts_at = db.Column(db.DateTime, nullable=True)
+    ends_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
+
+    product = db.relationship('Product')
+
+    def __repr__(self):
+        return f'<PromoBanner {self.headline}>'

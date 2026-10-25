@@ -1,0 +1,81 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Banner Promo | Catering Batam{% endblock %}
+{% block heading %}Banner Promo{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <p class="text-sm text-maroon/70">Kelola banner promo yang tampil di halaman produk.</p>
+  </div>
+  <a href="{{ url_for('admin.promo_create') }}" class="inline-flex items-center gap-2 rounded-lg bg-maroon px-5 py-2.5 text-xs font-bold text-white shadow hover:bg-maroon-dark transition-colors">
+    <i class="fa-solid fa-plus"></i> Tambah Banner
+  </a>
+</div>
+
+{% if banners %}
+<div class="overflow-x-auto rounded-2xl border border-maroon/10 bg-white shadow-sm">
+  <table class="w-full text-sm">
+    <thead class="bg-maroon/5 text-maroon-dark">
+      <tr>
+        <th class="px-4 py-3 text-left font-semibold">Preview</th>
+        <th class="px-4 py-3 text-left font-semibold">Judul</th>
+        <th class="px-4 py-3 text-left font-semibold">Badge</th>
+        <th class="px-4 py-3 text-left font-semibold">Urutan</th>
+        <th class="px-4 py-3 text-left font-semibold">Status</th>
+        <th class="px-4 py-3 text-left font-semibold">Periode</th>
+        <th class="px-4 py-3 text-left font-semibold">Aksi</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-maroon/10">
+      {% for b in banners %}
+      <tr class="hover:bg-maroon/5 transition-colors">
+        <td class="px-4 py-3">
+          {% if b.image %}
+          <img src="{{ url_for('static', filename=b.image) }}" alt="{{ b.alt_text }}" class="h-16 w-auto rounded-lg object-cover">
+          {% endif %}
+        </td>
+        <td class="px-4 py-3 font-medium text-maroon-dark">{{ b.headline }}</td>
+        <td class="px-4 py-3">
+          {% if b.badge %}
+          <span class="inline-flex items-center rounded-full bg-gold/10 px-2.5 py-0.5 text-xs font-bold text-gold">{{ b.badge }}</span>
+          {% else %}<span class="text-stone-400 text-xs">—{% endif %}</td>
+        <td class="px-4 py-3 text-maroon/70">{{ b.display_order }}</td>
+        <td class="px-4 py-3">
+          <form method="POST" action="{{ url_for('admin.promo_toggle', id=b.id) }}" class="inline">
+            <button type="submit" class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition {% if b.is_active %}bg-green/10 text-green hover:bg-green/20{% else %}bg-stone/10 text-stone hover:bg-stone/20{% endif %}">
+              {% if b.is_active %}<i class="fa-solid fa-circle-check"></i> Aktif{% else %}<i class="fa-solid fa-circle-xmark"></i> Nonaktif{% endif %}
+            </button>
+          </form>
+        </td>
+        <td class="px-4 py-3 text-xs text-maroon/70">
+          {% if b.starts_at %}{{ b.starts_at.strftime('%d/%m/%Y') }}{% else %}—{% endif %}
+          {% if b.starts_at or b.ends_at %} → {% endif %}
+          {% if b.ends_at %}{{ b.ends_at.strftime('%d/%m/%Y') }}{% else %}—{% endif %}
+        </td>
+        <td class="px-4 py-3">
+          <div class="flex items-center gap-2">
+            <a href="{{ url_for('admin.promo_edit', id=b.id) }}" class="inline-flex items-center gap-1 rounded-lg border border-maroon/20 px-3 py-1.5 text-xs font-semibold text-maroon hover:bg-maroon/5 transition-colors" title="Edit">
+              <i class="fa-solid fa-pen"></i>
+            </a>
+            <form method="POST" action="{{ url_for('admin.promo_delete', id=b.id) }}" class="inline" onsubmit="return confirm('Hapus banner ini?');">
+              <button type="submit" class="inline-flex items-center gap-1 rounded-lg border border-red/20 px-3 py-1.5 text-xs font-semibold text-red hover:bg-red/5 transition-colors" title="Hapus">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="rounded-2xl border-2 border-dashed border-maroon/20 bg-maroon/5 p-12 text-center">
+  <i class="fa-solid fa-image text-4xl text-maroon/30 mb-4"></i>
+  <h3 class="text-lg font-bold text-maroon">Belum ada banner promo</h3>
+  <p class="mt-1 text-sm text-maroon/70">Tambahkan banner pertama untuk menampilkan promo di halaman produk.</p>
+  <a href="{{ url_for('admin.promo_create') }}" class="mt-4 inline-flex items-center gap-2 rounded-lg bg-maroon px-5 py-2.5 text-xs font-bold text-white shadow hover:bg-maroon-dark transition-colors">
+    <i class="fa-solid fa-plus"></i> Tambah Banner
+  </a>
+</div>
+{% endif %}
+{% endblock %}

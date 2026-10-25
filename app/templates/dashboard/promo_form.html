@@ -1,0 +1,123 @@
+{% extends "dashboard/base.html" %}
+{% block title %}{% if banner %}Edit{% else %}Tambah{% endif %} Banner Promo | Catering Batam{% endblock %}
+{% block heading %}{% if banner %}Edit Banner Promo{% else %}Tambah Banner Promo{% endif %}{% endblock %}
+{% block content %}
+<div class="max-w-3xl">
+  <form method="POST" enctype="multipart/form-data" class="space-y-6" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- Gambar -->
+    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-maroon/10">
+      <label class="block text-sm font-semibold text-maroon mb-2">Gambar Banner <span class="text-red">*</span></label>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <input type="file" name="image" accept="image/png,image/jpeg,image/webp" {% if not banner %}required{% endif %} class="block w-full text-sm text-maroon/70 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-maroon/10 file:text-maroon hover:file:bg-maroon/20">
+          <p class="mt-1 text-xs text-stone-500">PNG, JPG, atau WebP. Maksimal 2MB. Akan dikonversi ke WebP.</p>
+        </div>
+        {% if banner and banner.image %}
+        <div>
+          <p class="text-xs text-stone-500 mb-1">Gambar saat ini:</p>
+          <img src="{{ url_for('static', filename=banner.image) }}" alt="{{ banner.alt_text }}" class="h-24 w-auto rounded-lg object-cover border border-maroon/10">
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Alt Text -->
+    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-maroon/10">
+      <label for="alt_text" class="block text-sm font-semibold text-maroon mb-2">Teks Alternatif (Alt Text) <span class="text-red">*</span></label>
+      <input type="text" id="alt_text" name="alt_text" value="{{ banner.alt_text if banner else '' }}" class="w-full px-4 py-2.5 text-sm text-maroon bg-white border border-maroon/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition" placeholder="Deskripsi gambar untuk aksesibilitas" required>
+    </div>
+
+    <!-- Judul & Subjudul -->
+    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-maroon/10 space-y-4">
+      <h3 class="text-lg font-bold text-maroon">Konten Banner</h3>
+      <div>
+        <label for="headline" class="block text-sm font-semibold text-maroon mb-1">Judul Utama <span class="text-red">*</span></label>
+        <input type="text" id="headline" name="headline" value="{{ banner.headline if banner else '' }}" maxlength="120" class="w-full px-4 py-2.5 text-sm text-maroon bg-white border border-maroon/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition" placeholder="Contoh: Nasi Kebuli Kambing" required>
+      </div>
+      <div>
+        <label for="subtitle" class="block text-sm font-semibold text-maroon mb-1">Subjudul</label>
+        <input type="text" id="subtitle" name="subtitle" value="{{ banner.subtitle if banner else '' }}" maxlength="255" class="w-full px-4 py-2.5 text-sm text-maroon bg-white border border-maroon/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition" placeholder="Contoh: Menu favorit pelanggan aqiqah. Bumbu rempah, daging empuk.">
+      </div>
+      <div>
+        <label for="badge" class="block text-sm font-semibold text-maroon mb-1">Badge (Opsional)</label>
+        <input type="text" id="badge" name="badge" value="{{ banner.badge if banner else '' }}" maxlength="30" class="w-full px-4 py-2.5 text-sm text-maroon bg-white border border-maroon/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition" placeholder="Contoh: TERLARIS, HEMAT, LENGKAP">
+        <p class="mt-1 text-xs text-stone-500">Kosongkan untuk menyembunyikan badge.</p>
+      </div>
+    </div>
+
+    <!-- Harga & CTA -->
+    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-maroon/10 space-y-4">
+      <h3 class="text-lg font-bold text-maroon">Harga & Call-to-Action</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="price" class="block text-sm font-semibold text-maroon mb-1">Harga (Angka, tanpa Rp)</label>
+          <input type="number" id="price" name="price" value="{{ banner.price if banner and banner.price is not none else '' }}" min="0" class="w-full px-4 py-2.5 text-sm text-maroon bg-white border border-maroon/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition" placeholder="Contoh: 40000">
+          <p class="mt-1 text-xs text-stone-500">Kosongkan untuk menyembunyikan harga.</p>
+        </div>
+        <div>
+          <label for="unit" class="block text-sm font-semibold text-maroon mb-1">Satuan</label>
+          <input type="text" id="unit" name="unit" value="{{ banner.unit if banner else '' }}" maxlength="30" class="w-full px-4 py-2.5 text-sm text-maroon bg-white border border-maroon/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition" placeholder="Contoh: /box, /porsi, /ekor">
+        </div>
+      </div>
+      <div>
+        <label for="cta_label" class="block text-sm font-semibold text-maroon mb-1">Teks Tombol CTA <span class="text-red">*</span></label>
+        <input type="text" id="cta_label" name="cta_label" value="{{ banner.cta_label if banner else 'Pesan Sekarang' }}" maxlength="40" class="w-full px-4 py-2.5 text-sm text-maroon bg-white border border-maroon/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition" placeholder="Contoh: Lihat Produk, Pesan Sekarang" required>
+      </div>
+      <div>
+        <label for="product_id" class="block text-sm font-semibold text-maroon mb-1">Tautkan ke Produk (Opsional)</label>
+        <select id="product_id" name="product_id" class="w-full px-4 py-2.5 text-sm text-maroon bg-white border border-maroon/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition">
+          <option value="">— Pilih produk (akan link ke halaman detail) —</option>
+          {% for p in products %}
+          <option value="{{ p.id }}" {% if banner and banner.product_id == p.id %}selected{% endif %}>{{ p.name }} (Rp {{ '{:,.0f}'.format(p.price).replace(',', '.') }})</option>
+          {% endfor %}
+        </select>
+        <p class="mt-1 text-xs text-stone-500">Jika dipilih, tombol akan mengarah ke halaman detail produk ini.</p>
+      </div>
+      <div>
+        <label for="cta_url" class="block text-sm font-semibold text-maroon mb-1">URL Kustom (Opsional)</label>
+        <input type="text" id="cta_url" name="cta_url" value="{{ banner.cta_url if banner else '' }}" class="w-full px-4 py-2.5 text-sm text-maroon bg-white border border-maroon/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition" placeholder="Contoh: /produk atau https://example.com">
+        <p class="mt-1 text-xs text-stone-500">Gunakan URL relatif (awali dengan /) atau URL https:// lengkap. Diabaikan jika produk dipilih di atas.</p>
+      </div>
+    </div>
+
+    <!-- Pengaturan Tampil -->
+    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-maroon/10 space-y-4">
+      <h3 class="text-lg font-bold text-maroon">Pengaturan Tampil</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="display_order" class="block text-sm font-semibold text-maroon mb-1">Urutan Tampil</label>
+          <input type="number" id="display_order" name="display_order" value="{{ banner.display_order if banner else 0 }}" min="0" class="w-full px-4 py-2.5 text-sm text-maroon bg-white border border-maroon/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition">
+        </div>
+        <div class="flex items-center">
+          <div class="flex items-center">
+            <input type="checkbox" id="is_active" name="is_active" {% if not banner or banner.is_active %}checked{% endif %} class="h-4 w-4 rounded border-maroon/30 text-maroon focus:ring-gold">
+            <label for="is_active" class="ml-2 text-sm font-semibold text-maroon cursor-pointer">Aktifkan banner ini</label>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="starts_at" class="block text-sm font-semibold text-maroon mb-1">Tanggal Mulai (Opsional)</label>
+          <input type="datetime-local" id="starts_at" name="starts_at" value="{{ banner.starts_at.strftime('%Y-%m-%dT%H:%M') if banner and banner.starts_at else '' }}" class="w-full px-4 py-2.5 text-sm text-maroon bg-white border border-maroon/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition">
+          <p class="mt-1 text-xs text-stone-500">Kosongkan untuk langsung tampil.</p>
+        </div>
+        <div>
+          <label for="ends_at" class="block text-sm font-semibold text-maroon mb-1">Tanggal Berakhir (Opsional)</label>
+          <input type="datetime-local" id="ends_at" name="ends_at" value="{{ banner.ends_at.strftime('%Y-%m-%dT%H:%M') if banner and banner.ends_at else '' }}" class="w-full px-4 py-2.5 text-sm text-maroon bg-white border border-maroon/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition">
+          <p class="mt-1 text-xs text-stone-500">Kosongkan untuk tidak kadaluarsa.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-end gap-3">
+      <a href="{{ url_for('admin.promo_list') }}" class="inline-flex items-center justify-center rounded-lg border border-maroon/20 px-5 py-2.5 text-sm font-semibold text-maroon hover:bg-maroon/5 transition-colors">Batal</a>
+      <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-maroon px-5 py-2.5 text-sm font-bold text-white shadow hover:bg-maroon-dark transition-colors">
+        {% if banner %}<i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Perubahan{% else %}<i class="fa-solid fa-plus mr-2"></i> Tambah Banner{% endif %}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
