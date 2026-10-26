@@ -26,32 +26,22 @@
 <section class="py-8">
   <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20">
     <div class="grid items-start gap-8 lg:grid-cols-12">
-      <form id="checkout-form" class="space-y-4 rounded-3xl bg-cream p-8 shadow-2xl lg:col-span-7">
-        <h2 class="border-b border-maroon/15 pb-3 text-lg font-bold text-maroon">Detail Penagihan</h2>
+      <!-- Left column: Delivery details form (7 cols) -->
+      <form id="checkout-form" method="POST" class="space-y-4 rounded-3xl bg-cream p-8 shadow-2xl lg:col-span-7">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <h2 class="border-b border-maroon/15 pb-3 text-lg font-bold text-maroon">Detail Pengiriman</h2>
 
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label for="first_name" class="mb-1.5 block text-sm font-semibold text-maroon">
-              Nama Depan <span class="text-maroon">*</span>
+            <label for="recipient_name" class="mb-1.5 block text-sm font-semibold text-maroon">
+              Nama Penerima <span class="text-maroon">*</span>
             </label>
-            <input id="first_name" name="first_name" type="text" placeholder="Nama depan Anda" value="" required
-              class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30">
+            <input id="recipient_name" name="recipient_name" type="text" placeholder="Nama lengkap penerima" value="{{ form_data.recipient_name if form_data else (user.fullname if user else '') }}" required
+              class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30 {% if errors and errors.recipient_name %}border-red-500{% endif %}">
+            {% if errors and errors.recipient_name %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.recipient_name }}</p>
+            {% endif %}
           </div>
-          <div>
-            <label for="last_name" class="mb-1.5 block text-sm font-semibold text-maroon">
-              Nama Belakang <span class="text-maroon">*</span>
-            </label>
-            <input id="last_name" name="last_name" type="text" placeholder="Nama belakang Anda" value="" required
-              class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30">
-          </div>
-        </div>
-
-        <div>
-          <label for="company" class="mb-1.5 block text-sm font-semibold text-maroon">
-            Nama Instansi / Perusahaan (Opsional)
-          </label>
-          <input id="company" name="company" type="text" placeholder="Nama kantor atau yayasan" value=""
-            class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30">
         </div>
 
         <div>
@@ -59,7 +49,10 @@
             Alamat Lengkap Pengiriman <span class="text-maroon">*</span>
           </label>
           <textarea id="address" name="address" rows="2" placeholder="Nomor rumah, nama jalan, blok, RT/RW, kelurahan, dan kecamatan" required
-            class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30"></textarea>
+            class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30 {% if errors and errors.address %}border-red-500{% endif %}">{{ form_data.address if form_data else '' }}</textarea>
+          {% if errors and errors.address %}
+          <p class="mt-1 text-xs text-red-600">{{ errors.address }}</p>
+          {% endif %}
         </div>
 
         <div class="grid gap-4 sm:grid-cols-2">
@@ -67,15 +60,11 @@
             <label for="city" class="mb-1.5 block text-sm font-semibold text-maroon">
               Kota / Kabupaten <span class="text-maroon">*</span>
             </label>
-            <input id="city" name="city" type="text" placeholder="" value="Kota Batam" required
-              class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30">
-          </div>
-          <div>
-            <label for="province" class="mb-1.5 block text-sm font-semibold text-maroon">
-              Provinsi <span class="text-maroon">*</span>
-            </label>
-            <input id="province" name="province" type="text" placeholder="" value="Kepulauan Riau" required
-              class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30">
+            <input id="city" name="city" type="text" placeholder="Kota" value="{{ form_data.city if form_data else 'Kota Batam' }}" required
+              class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30 {% if errors and errors.city %}border-red-500{% endif %}">
+            {% if errors and errors.city %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.city }}</p>
+            {% endif %}
           </div>
         </div>
 
@@ -84,14 +73,39 @@
             <label for="phone" class="mb-1.5 block text-sm font-semibold text-maroon">
               Nomor WhatsApp / HP <span class="text-maroon">*</span>
             </label>
-            <input id="phone" name="phone" type="tel" placeholder="08xxxxxxxxxx" value="" required
-              class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30">
+            <input id="phone" name="phone" type="tel" placeholder="08xxxxxxxxxx" value="{{ form_data.phone if form_data else (user.phone if user and user.phone else '') }}" required
+              class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30 {% if errors and errors.phone %}border-red-500{% endif %}">
+            {% if errors and errors.phone %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.phone }}</p>
+            {% endif %}
           </div>
           <div>
             <label for="email" class="mb-1.5 block text-sm font-semibold text-maroon">
               Alamat Email <span class="text-maroon">*</span>
             </label>
-            <input id="email" name="email" type="email" placeholder="nama@email.com" value="" required
+            <input id="email" name="email" type="email" placeholder="nama@email.com" value="{{ user.email if user else '' }}" required readonly
+              class="w-full rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400">
+            <p class="mt-1 text-xs text-stone-500">Email tidak bisa diubah di sini. Gunakan email akun Anda.</p>
+          </div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="delivery_date" class="mb-1.5 block text-sm font-semibold text-maroon">
+              Tanggal Pengiriman <span class="text-maroon">*</span>
+            </label>
+            <input id="delivery_date" name="delivery_date" type="date" value="{{ form_data.delivery_date if form_data else '' }}" min="{{ (today + timedelta(days=1)).isoformat() }}" required
+              class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30 {% if errors and errors.delivery_date %}border-red-500{% endif %}">
+            {% if errors and errors.delivery_date %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.delivery_date }}</p>
+            {% endif %}
+            <p class="mt-1 text-xs text-stone-500">Minimal 1 hari lead time (besok atau setelahnya).</p>
+          </div>
+          <div>
+            <label for="delivery_time" class="mb-1.5 block text-sm font-semibold text-maroon">
+              Waktu Pengiriman (Opsional)
+            </label>
+            <input id="delivery_time" name="delivery_time" type="time" value="{{ form_data.delivery_time if form_data else '' }}"
               class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30">
           </div>
         </div>
@@ -101,52 +115,39 @@
             Catatan Pesanan Khusus (Opsional)
           </label>
           <textarea id="notes" name="notes" rows="3" placeholder="Contoh: jam pengiriman aqiqah, bumbu tidak terlalu pedas, instruksi khusus kurir."
-            class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30"></textarea>
+            class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30">{{ form_data.notes if form_data else '' }}</textarea>
         </div>
       </form>
 
+      <!-- Right column: Order summary + Payment method (5 cols) -->
       <div class="space-y-6 lg:col-span-5">
-        <div class="rounded-2xl border border-maroon/10 bg-cream p-8 shadow-2xl">
+        <div class="rounded-2xl border border-maroon/10 bg-cream p-8 shadow-2xl top-24">
           <h2 class="border-b border-maroon/15 pb-3 text-lg font-bold text-maroon">Pesanan Anda</h2>
           <div class="divide-y divide-maroon/10">
+            {% for item in cart_items %}
             <div class="flex items-center justify-between gap-3 py-3">
               <div class="flex items-center gap-3">
-                <img src="{{ url_for('static', filename='img/assets4.png') }}" alt="Paket Sate Kambing Aqiqah Premium" class="h-14 w-14 shrink-0 rounded-lg border border-maroon/10 object-cover">
+                <a href="{{ url_for('main.detail_produk', id=item.product_id) }}" class="block h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-maroon/10 bg-stone-200" aria-label="{{ item.name }}">
+                  {% if item.image %}
+                  <img src="{{ url_for('static', filename=item.image.replace('static/', '')) }}" alt="{{ item.name }}" loading="lazy" class="h-full w-full object-cover">
+                  {% else %}
+                  <div class="flex h-full w-full items-center justify-center text-xs text-stone-500">No image</div>
+                  {% endif %}
+                </a>
                 <div>
-                  <p class="text-sm font-semibold text-maroon">Paket Sate Kambing Aqiqah Premium</p>
-                  <p class="text-xs text-stone-500">1 × Rp 450.000</p>
+                  <p class="text-sm font-semibold text-maroon">{{ item.name }}</p>
+                  <p class="text-xs text-stone-500">{{ item.quantity }} × Rp {{ "{:,.0f}".format(item.price).replace(",", ".") }}</p>
                 </div>
               </div>
-              <span class="whitespace-nowrap text-sm font-semibold text-maroon">Rp 450.000</span>
+              <span class="whitespace-nowrap text-sm font-semibold text-maroon">Rp {{ "{:,.0f}".format(item.subtotal).replace(",", ".") }}</span>
             </div>
-
-            <div class="flex items-center justify-between gap-3 py-3">
-              <div class="flex items-center gap-3">
-                <img src="{{ url_for('static', filename='img/assets2.png') }}" alt="Nasi Kebuli Rempah" class="h-14 w-14 shrink-0 rounded-lg border border-maroon/10 object-cover">
-                <div>
-                  <p class="text-sm font-semibold text-maroon">Nasi Kebuli Rempah</p>
-                  <p class="text-xs text-stone-500">2 × Rp 40.000</p>
-                </div>
-              </div>
-              <span class="whitespace-nowrap text-sm font-semibold text-maroon">Rp 80.000</span>
-            </div>
-
-            <div class="flex items-center justify-between gap-3 py-3">
-              <div class="flex items-center gap-3">
-                <img src="{{ url_for('static', filename='img/assets3.png') }}" alt="Gulai Kambing Gurih" class="h-14 w-14 shrink-0 rounded-lg border border-maroon/10 object-cover">
-                <div>
-                  <p class="text-sm font-semibold text-maroon">Gulai Kambing Gurih</p>
-                  <p class="text-xs text-stone-500">2 × Rp 42.000</p>
-                </div>
-              </div>
-              <span class="whitespace-nowrap text-sm font-semibold text-maroon">Rp 84.000</span>
-            </div>
+            {% endfor %}
           </div>
 
           <div class="mt-2 space-y-2 border-t border-maroon/15 pt-4 text-sm text-maroon/85">
             <p class="flex justify-between">
-              <span>Subtotal</span>
-              <span class="font-semibold">Rp 614.000</span>
+              <span>Subtotal ({{ cart_items|length }} produk)</span>
+              <span class="font-semibold">Rp {{ "{:,.0f}".format(cart_subtotal).replace(",", ".") }}</span>
             </p>
             <p class="flex justify-between">
               <span>Ongkos Kirim (Area Batam)</span>
@@ -154,32 +155,24 @@
             </p>
             <p class="flex justify-between border-t border-maroon/15 pt-3 text-base font-bold text-maroon">
               <span>Total Pembayaran</span>
-              <span>Rp 614.000</span>
+              <span>Rp {{ "{:,.0f}".format(cart_total).replace(",", ".") }}</span>
             </p>
           </div>
         </div>
 
-        <div class="rounded-2xl border border-maroon/10 bg-cream p-8 shadow-2xl">
+        <div class="rounded-2xl border border-maroon/10 bg-cream p-8 shadow-2xl sticky top-24" style="top: calc(6rem + 24px + 1.5rem);">
           <h2 class="border-b border-maroon/15 pb-3 text-lg font-bold text-maroon mb-4">Metode Pembayaran</h2>
           <div class="space-y-3">
             <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-maroon/15 bg-white p-4 transition hover:border-maroon">
-              <input type="radio" name="payment_method" value="bank" checked class="mt-1 accent-maroon">
+              <input type="radio" name="payment_method" value="transfer" {% if not form_data or form_data.payment_method != 'cod' %}checked{% endif %} class="mt-1 accent-maroon" required form="checkout-form">
               <span>
-                <span class="block text-sm font-semibold text-maroon">Transfer Bank Otomatis</span>
-                <span class="text-xs text-stone-500">BCA, Mandiri, BSI, BNI (verifikasi instan via Virtual Account)</span>
+                <span class="block text-sm font-semibold text-maroon">Transfer Bank</span>
+                <span class="text-xs text-stone-500">BCA, Mandiri, BSI, BNI (verifikasi manual via bukti transfer)</span>
               </span>
             </label>
 
             <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-maroon/15 bg-white p-4 transition hover:border-maroon">
-              <input type="radio" name="payment_method" value="qris" class="mt-1 accent-maroon">
-              <span>
-                <span class="block text-sm font-semibold text-maroon">QRIS (Semua E-Wallet)</span>
-                <span class="text-xs text-stone-500">Scan via GoPay, OVO, ShopeePay, DANA, BCA QR</span>
-              </span>
-            </label>
-
-            <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-maroon/15 bg-white p-4 transition hover:border-maroon">
-              <input type="radio" name="payment_method" value="cod" class="mt-1 accent-maroon">
+              <input type="radio" name="payment_method" value="cod" {% if form_data and form_data.payment_method == 'cod' %}checked{% endif %} class="mt-1 accent-maroon" form="checkout-form">
               <span>
                 <span class="block text-sm font-semibold text-maroon">Bayar di Tempat (COD)</span>
                 <span class="text-xs text-stone-500">Bayar langsung saat hidangan tiba di lokasi acara Anda</span>
@@ -187,11 +180,15 @@
             </label>
           </div>
 
+          {% if errors and errors.payment_method %}
+          <p class="mt-2 text-xs text-red-600">{{ errors.payment_method }}</p>
+          {% endif %}
+
           <p class="mt-4 rounded-xl bg-white/70 p-3 text-xs text-stone-600">
             Transaksi aman & terenkripsi. Jaminan 100% halal dan higienis.
           </p>
 
-          <button type="submit" form="checkout-form" class="inline-flex items-center justify-center gap-2 rounded-full bg-maroon px-7 py-3 text-sm font-semibold text-white shadow transition hover:bg-maroon-dark mt-5 w-full py-3.5">
+          <button type="submit" form="checkout-form" id="checkout-submit" class="inline-flex items-center justify-center gap-2 rounded-full bg-maroon px-7 py-3 text-sm font-semibold text-white shadow transition hover:bg-maroon-dark mt-5 w-full py-3.5">
             Konfirmasi Pesanan
           </button>
 

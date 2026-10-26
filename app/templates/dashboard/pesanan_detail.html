@@ -1,0 +1,261 @@
+{% extends "dashboard/base.html" %}
+{% set active = 'pesanan' %}
+{% block title %}{{ order.order_code }} | Dashboard Catering Batam{% endblock %}
+{% block eyebrow %}Detail Pesanan{% endblock %}
+{% block heading %}{{ order.order_code }}{% endblock %}
+{% block subheader %}
+<div class="flex flex-wrap items-center gap-3">
+  <a href="{{ url_for('admin.pesanan') }}" class="rounded-md border border-maroon/25 bg-white px-4 py-2 text-xs font-bold text-maroon hover:bg-cream transition-colors">
+    <i class="fa-solid fa-arrow-left mr-1"></i>Kembali
+  </a>
+  <span class="ml-auto">
+    {% set status_colors = {
+      'pending_payment': 'bg-gold/20 text-amber-800',
+      'waiting_verification': 'bg-blue-100 text-blue-700',
+      'paid': 'bg-indigo-100 text-indigo-700',
+      'processing': 'bg-violet-100 text-violet-700',
+      'delivered': 'bg-emerald-100 text-emerald-700',
+      'cancelled': 'bg-stone-200 text-stone-600',
+    } %}
+    <span class="rounded-full px-3 py-1 text-xs font-bold {{ status_colors.get(order.status, 'bg-stone-200 text-stone-600') }}">
+      {{ order.status_label }}
+    </span>
+  </span>
+</div>
+{% endblock %}
+{% block content %}
+<section class="space-y-6">
+  <!-- Order Info & Actions -->
+  <section class="rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] p-6 shadow-sm transition-shadow hover:shadow-md">
+    <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark mb-4">Informasi Pesanan</h2>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Kode Pesanan</p>
+        <p class="mt-1 font-opsdisplay text-xl font-bold tabular-nums text-maroon-dark">{{ order.order_code }}</p>
+      </div>
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Pelanggan</p>
+        <p class="mt-1 font-bold text-ink">{{ order.user.fullname }}</p>
+        <p class="text-xs text-ink/60">{{ order.user.email }}</p>
+      </div>
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Tanggal Pesan</p>
+        <p class="mt-1 font-bold text-ink">{{ order.created_at.strftime('%d %b %Y %H:%M') }}</p>
+      </div>
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Total</p>
+        <p class="mt-1 font-opsdisplay text-xl font-bold tabular-nums text-maroon-dark">Rp {{ "{:,.0f}".format(order.total_price).replace(',', '.') }}</p>
+      </div>
+    </div>
+    
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Metode Pembayaran</p>
+        <p class="mt-1 font-bold text-ink capitalize">{{ order.payment_method }}</p>
+      </div>
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Tanggal Acara</p>
+        <p class="mt-1 font-bold text-ink">{{ order.delivery_date.strftime('%d %b %Y') }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Payment Proof Section -->
+  {% if order.payment_proof %}
+  <section class="rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] p-6 shadow-sm transition-shadow hover:shadow-md">
+    <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark mb-4">Bukti Pembayaran</h2>
+    {% set ext = order.payment_proof.rsplit('.', 1)[-1].lower() %}
+    {% if ext in ['jpg', 'jpeg', 'png', 'webp'] %}
+    <div class="rounded-lg border border-maroon/15 bg-white p-2 max-w-md">
+      <img src="{{ url_for('main.view_payment_proof', order_code=order.order_code) }}" alt="Bukti pembayaran {{ order.order_code }}" class="w-full h-auto rounded-md">
+    </div>
+    {% else %}
+    <div class="flex items-center gap-3 rounded-lg border border-maroon/15 bg-white p-4 max-w-md">
+      <i class="fa-solid fa-file-pdf text-3xl text-red-600"></i>
+      <div>
+        <p class="font-bold text-ink">{{ order.payment_proof }}</p>
+        <p class="text-xs text-ink/60">PDF - klik untuk mengunduh</p>
+      </div>
+      <a href="{{ url_for('main.view_payment_proof', order_code=order.order_code) }}" class="ml-auto rounded-md bg-maroon px-4 py-2 text-xs font-bold text-white hover:bg-maroon-dark transition-colors">
+        <i class="fa-solid fa-download mr-1"></i>Unduh
+      </a>
+    </div>
+    {% endif %}
+    {% if order.payment_uploaded_at %}
+    <p class="mt-2 text-xs text-ink/60">Diunggah: {{ order.payment_uploaded_at.strftime('%d %b %Y %H:%M') }}</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  <!-- Rejection Reason -->
+  {% if order.rejection_reason %}
+  <section class="rounded-xl border border-red-200 bg-red-50 p-6 shadow-sm">
+    <h2 class="font-opsdisplay text-lg font-bold text-red-800 mb-2 flex items-center gap-2">
+      <i class="fa-solid fa-circle-exclamation"></i> Alasan Penolakan
+    </h2>
+    <p class="text-red-700">{{ order.rejection_reason }}</p>
+  </section>
+  {% endif %}
+
+  <!-- Delivery Info -->
+  <section class="rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] p-6 shadow-sm transition-shadow hover:shadow-md">
+    <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark mb-4">Informasi Pengiriman</h2>
+    <dl class="space-y-3 text-sm">
+      <div class="flex justify-between gap-4 flex-wrap">
+        <dt class="text-ink/70">Penerima</dt>
+        <dd class="font-semibold text-ink text-right">{{ order.recipient_name }}</dd>
+      </div>
+      <div class="flex justify-between gap-4 flex-wrap">
+        <dt class="text-ink/70">Telepon</dt>
+        <dd class="font-semibold text-ink text-right">{{ order.phone }}</dd>
+      </div>
+      <div class="flex justify-between gap-4 flex-wrap">
+        <dt class="text-ink/70">Alamat</dt>
+        <dd class="font-semibold text-ink text-right">{{ order.address }}, {{ order.city }}</dd>
+      </div>
+      {% if order.delivery_time %}
+      <div class="flex justify-between gap-4 flex-wrap">
+        <dt class="text-ink/70">Waktu Pengiriman</dt>
+        <dd class="font-semibold text-ink text-right">{{ order.delivery_time }}</dd>
+      </div>
+      {% endif %}
+      {% if order.notes %}
+      <div class="flex justify-between gap-4 flex-wrap">
+        <dt class="text-ink/70">Catatan</dt>
+        <dd class="font-semibold text-ink text-right">{{ order.notes }}</dd>
+      </div>
+      {% endif %}
+    </dl>
+  </section>
+
+  <!-- Order Items -->
+  <section class="rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] p-6 shadow-sm transition-shadow hover:shadow-md">
+    <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark mb-4">Item Pesanan</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[600px] text-left text-sm">
+        <thead>
+          <tr class="border-b border-maroon/15 text-[11px] uppercase tracking-widest text-maroon/60">
+            <th class="px-5 py-3">Produk</th>
+            <th class="px-3 py-3 text-right">Harga Satuan</th>
+            <th class="px-3 py-3 text-center">Qty</th>
+            <th class="px-5 py-3 text-right">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-maroon/10">
+          {% for item in order.items %}
+          <tr class="hover:bg-cream/50 transition-colors">
+            <td class="px-5 py-3">
+              <p class="font-semibold text-ink">{{ item.product_name }}</p>
+            </td>
+            <td class="px-3 py-3 text-right font-mono tabular-nums text-ink">Rp {{ "{:,.0f}".format(item.unit_price).replace(',', '.') }}</td>
+            <td class="px-3 py-3 text-center font-bold text-ink">{{ item.quantity }}</td>
+            <td class="px-5 py-3 text-right font-bold tabular-nums text-maroon-dark">Rp {{ "{:,.0f}".format(item.subtotal).replace(',', '.') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="border-t-2 border-maroon/15">
+            <td class="px-5 py-3 font-bold text-maroon-dark" colspan="3">Total</td>
+            <td class="px-5 py-3 text-right font-opsdisplay font-bold tabular-nums text-maroon-dark">Rp {{ "{:,.0f}".format(order.total_price).replace(',', '.') }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </section>
+
+  <!-- Admin Actions -->
+  <section class="rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] p-6 shadow-sm transition-shadow hover:shadow-md">
+    <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark mb-4">Aksi Admin</h2>
+    
+    {% if order.status == order.STATUS_WAITING_VERIFICATION %}
+    <!-- Approve/Reject for waiting_verification -->
+    <div class="flex flex-wrap gap-3 mb-4">
+      <form method="POST" action="{{ url_for('admin.pesanan_approve', order_code=order.order_code) }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="rounded-md bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition-colors" onclick="return confirm('Setujui pembayaran untuk pesanan ini?')">
+          <i class="fa-solid fa-check mr-1"></i>Setujui Pembayaran
+        </button>
+      </form>
+      <button type="button" class="rounded-md bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700 transition-colors" data-reject-modal>
+        <i class="fa-solid fa-xmark mr-1"></i>Tolak Pembayaran
+      </button>
+    </div>
+    
+    <!-- Rejection reason modal form -->
+    <div id="reject-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-maroon-dark/60">
+      <div class="rounded-xl bg-white p-6 w-full max-w-md mx-4">
+        <h3 class="font-opsdisplay text-lg font-bold text-maroon-dark mb-4">Tolak Pembayaran</h3>
+        <p class="text-sm text-ink/70 mb-4">Masukkan alasan penolakan. Pelanggan akan diberitahu dan dapat mengunggah bukti baru.</p>
+        <form method="POST" action="{{ url_for('admin.pesanan_reject', order_code=order.order_code) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <textarea name="rejection_reason" required class="w-full rounded-lg border border-maroon/25 bg-white px-4 py-3 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold" rows="4" placeholder="Contoh: Bukti pembayaran tidak jelas, nominal tidak sesuai, atau format file tidak didukung."></textarea>
+          <div class="mt-4 flex justify-end gap-2">
+            <button type="button" class="rounded-md border border-maroon/25 bg-white px-4 py-2 text-xs font-bold text-maroon hover:bg-cream transition-colors" data-reject-cancel>Batal</button>
+            <button type="submit" class="rounded-md bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700 transition-colors">Tolak</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    {% elif order.status == order.STATUS_PAID %}
+    <!-- Process for paid -->
+    <form method="POST" action="{{ url_for('admin.pesanan_process', order_code=order.order_code) }}" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition-colors" onclick="return confirm('Mulai memproses pesanan ini?')">
+        <i class="fa-solid fa-gears mr-1"></i>Proses Pesanan
+      </button>
+    </form>
+    
+    {% elif order.status == order.STATUS_PROCESSING %}
+    <!-- Complete for processing -->
+    <form method="POST" action="{{ url_for('admin.pesanan_complete', order_code=order.order_code) }}" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="rounded-md bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition-colors" onclick="return confirm('Tandai pesanan sebagai selesai?')">
+        <i class="fa-solid fa-check-double mr-1"></i>Selesaikan Pesanan
+      </button>
+    </form>
+    
+    {% endif %}
+    
+    <!-- Cancel button (available for all non-delivered, non-cancelled) -->
+    {% if order.status not in [order.STATUS_DELIVERED, order.STATUS_CANCELLED] %}
+    <div class="mt-4 pt-4 border-t border-maroon/15">
+      <form method="POST" action="{{ url_for('admin.pesanan_cancel', order_code=order.order_code) }}" class="inline" onsubmit="return confirm('BATALKAN pesanan ini? Stok akan dikembalikan. Tindakan ini tidak dapat dibatalkan.')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="rounded-md border border-red-300 bg-white px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors">
+          <i class="fa-solid fa-ban mr-1"></i>Batalkan Pesanan (Admin)
+        </button>
+      </form>
+      <p class="mt-2 text-xs text-ink/60">Stok produk akan dikembalikan ke inventaris.</p>
+    </div>
+    {% endif %}
+  </section>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const rejectBtn = document.querySelector('[data-reject-modal]');
+  const rejectModal = document.getElementById('reject-modal');
+  const rejectCancel = document.querySelector('[data-reject-cancel]');
+  
+  if (rejectBtn && rejectModal) {
+    rejectBtn.addEventListener('click', function() {
+      rejectModal.classList.remove('hidden');
+      rejectModal.classList.add('flex');
+    });
+    
+    rejectCancel.addEventListener('click', function() {
+      rejectModal.classList.add('hidden');
+      rejectModal.classList.remove('flex');
+    });
+    
+    rejectModal.addEventListener('click', function(e) {
+      if (e.target === rejectModal) {
+        rejectModal.classList.add('hidden');
+        rejectModal.classList.remove('flex');
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

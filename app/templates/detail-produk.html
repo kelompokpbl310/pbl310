@@ -36,12 +36,18 @@
 
           <!-- Rating -->
           <p class="mt-3 flex items-center gap-2 text-sm">
-            {% if reviews %}
-              <span class="text-gold" aria-hidden="true">{% for i in range(5) %}★{% endfor %}</span>
-              <span class="text-stone-500">({{ reviews|length }} ulasan pelanggan)</span>
+            {% if avg_rating and avg_rating > 0 %}
+              {% set full_stars = avg_rating|int %}
+              {% set has_half = avg_rating - full_stars >= 0.5 %}
+              <span class="text-gold" aria-hidden="true">
+                {% for i in range(full_stars) %}★{% endfor %}
+                {% if has_half %}★{% endif %}
+                {% for i in range(5 - full_stars - (1 if has_half else 0)) %}☆{% endfor %}
+              </span>
+              <span class="text-stone-500">{{ "%.1f"|format(avg_rating) }} ({{ reviews|length }} ulasan)</span>
             {% else %}
-              <span class="text-gold" aria-hidden="true">★★★★★</span>
-              <span class="text-stone-500">(Belum ada ulasan)</span>
+              <span class="text-gold" aria-hidden="true">☆☆☆☆☆</span>
+              <span class="text-stone-500">Belum ada ulasan</span>
             {% endif %}
           </p>
 
@@ -100,6 +106,126 @@
         </div>
 
         <div data-panel="ulasan" class="hidden pt-6">
+          <!-- Review Form for Eligible Customers -->
+          {% if current_user.is_authenticated %}
+          {% set ns = namespace(has_delivered=false, has_order=false) %}
+          {% for order in current_user.orders %}
+            {% for item in order.items %}
+              {% if item.product_id == product.id %}
+                {% set ns.has_order = true %}
+                {% if order.status == 'delivered' %}
+                  {% set ns.has_delivered = true %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+          {% set has_delivered = ns.has_delivered %}
+          {% set has_order = ns.has_order %}
+
+          {% if has_delivered %}
+          {% set existing_review = reviews|selectattr('user_id', 'equalto', current_user.id)|first %}
+          <div class="rounded-lg border border-maroon/10 bg-white p-6 shadow-sm mb-6">
+            {% if existing_review %}
+            <!-- Existing review display (read-only) -->
+            <div id="review-display">
+              <h4 class="text-sm font-bold text-maroon mb-4">Ulasan Anda</h4>
+              <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-gold" aria-hidden="true">{% for i in range(existing_review.rating) %}★{% endfor %}{% for i in range(5 - existing_review.rating) %}☆{% endfor %}</span>
+                  <span class="text-xs text-stone-500">{{ existing_review.created_at.strftime('%d %B %Y') }}</span>
+                </div>
+                {% if existing_review.comment %}
+                <p class="text-sm leading-relaxed text-stone-700">{{ existing_review.comment }}</p>
+                {% endif %}
+              </div>
+              <div class="mt-4 flex gap-3">
+                <button type="button" id="edit-review-btn" class="inline-flex items-center justify-center gap-2 rounded-full bg-maroon px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-maroon-dark">
+                  <i class="fa-solid fa-pen"></i> Edit Ulasan
+                </button>
+                <form method="POST" action="{{ url_for('main.delete_review', review_id=existing_review.id) }}" class="inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" onclick="return confirm('Yakin ingin menghapus ulasan ini?');" class="inline-flex items-center justify-center gap-2 rounded-full border-2 border-red-400 px-6 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700">
+                    <i class="fa-solid fa-trash-can"></i> Hapus
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Edit form (hidden by default) -->
+            <div id="review-edit-form" class="hidden">
+              <h4 class="text-sm font-bold text-maroon mb-4">Perbarui Ulasan Anda</h4>
+              <form method="POST" action="{{ url_for('main.add_review', product_id=product.id) }}" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div>
+                  <label class="block text-sm font-semibold text-maroon mb-2">Rating <span class="text-maroon">*</span></label>
+                  <div class="flex items-center gap-2" role="radiogroup" aria-label="Rating">
+                    {% for i in range(1, 6) %}
+                    <label class="cursor-pointer">
+                      <input type="radio" name="rating" value="{{ i }}" {% if existing_review.rating == i %}checked{% endif %} class="sr-only peer star-radio" required data-rating="{{ i }}">
+                      <span class="text-2xl text-gold rounded transition star-label" data-star="{{ i }}">{% if i <= existing_review.rating %}★{% else %}☆{% endif %}</span>
+                    </label>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div>
+                  <label for="comment" class="block text-sm font-semibold text-maroon mb-2">Komentar (Opsional, maks. 1000 karakter)</label>
+                  <textarea id="comment" name="comment" rows="3" maxlength="1000" placeholder="Bagikan pengalaman Anda dengan produk ini..."
+                    class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30">{{ existing_review.comment if existing_review.comment else '' }}</textarea>
+                </div>
+
+                <div class="flex gap-3">
+                  <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-full bg-maroon px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-maroon-dark">
+                    <i class="fa-solid fa-save"></i> Perbarui Ulasan
+                  </button>
+                  <button type="button" id="cancel-edit-btn" class="inline-flex items-center justify-center gap-2 rounded-full border-2 border-stone-300 px-6 py-2.5 text-sm font-semibold text-stone-600 transition hover:bg-stone-50">
+                    <i class="fa-solid fa-xmark"></i> Batal
+                  </button>
+                </div>
+              </form>
+            </div>
+            {% else %}
+            <h4 class="text-sm font-bold text-maroon mb-4">Tulis Ulasan</h4>
+            <form method="POST" action="{{ url_for('main.add_review', product_id=product.id) }}" class="space-y-4">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+              <div>
+                <label class="block text-sm font-semibold text-maroon mb-2">Rating <span class="text-maroon">*</span></label>
+                <div class="flex items-center gap-2" role="radiogroup" aria-label="Rating">
+                  {% for i in range(1, 6) %}
+                  <label class="cursor-pointer">
+                    <input type="radio" name="rating" value="{{ i }}" class="sr-only peer star-radio" required data-rating="{{ i }}">
+                    <span class="text-2xl text-gold rounded transition star-label" data-star="{{ i }}">☆</span>
+                  </label>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div>
+                <label for="comment" class="block text-sm font-semibold text-maroon mb-2">Komentar (Opsional, maks. 1000 karakter)</label>
+                <textarea id="comment" name="comment" rows="3" maxlength="1000" placeholder="Bagikan pengalaman Anda dengan produk ini..."
+                  class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30"></textarea>
+              </div>
+
+              <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-full bg-maroon px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-maroon-dark">
+                <i class="fa-solid fa-paper-plane"></i> Kirim Ulasan
+              </button>
+            </form>
+            {% endif %}
+          </div>
+          {% elif has_order %}
+          <div class="rounded-lg border border-maroon/10 bg-white p-6 shadow-sm mb-6 text-center text-maroon/70">
+            <p class="text-sm">Ulasan dapat diberikan setelah pesanan Anda berstatus <strong>Selesai</strong> dan mengandung produk ini.</p>
+          </div>
+          {% endif %}
+          {% else %}
+          <div class="rounded-lg border border-maroon/10 bg-white p-6 shadow-sm mb-6 text-center text-maroon/70">
+            <p class="text-sm">Silakan <a href="{{ url_for('auth.login') }}" class="font-bold text-maroon underline">login</a> untuk menulis ulasan.</p>
+          </div>
+          {% endif %}
+
+          <!-- Reviews List -->
           {% if reviews %}
           <div class="space-y-4">
             {% for review in reviews %}
@@ -111,7 +237,9 @@
                     <p class="text-xs font-semibold uppercase tracking-wider text-maroon/70">{{ review.user.fullname }}</p>
                     <p class="text-gold" aria-hidden="true">{% for i in range(review.rating) %}★{% endfor %}{% for i in range(5 - review.rating) %}☆{% endfor %}</p>
                   </div>
+                  {% if review.comment %}
                   <p class="mt-2 text-sm leading-relaxed text-stone-700">{{ review.comment }}</p>
+                  {% endif %}
                   <p class="mt-1 text-xs text-stone-400">{{ review.created_at.strftime('%d %B %Y') }}</p>
                 </div>
               </div>
@@ -138,6 +266,10 @@
       </div>
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
         {% for p in related_products %}
+        {% set p_avg = 0 %}
+        {% if p.reviews %}
+          {% set p_avg = (p.reviews|map(attribute='rating')|sum) / p.reviews|length %}
+        {% endif %}
         <article class="flex flex-col h-full overflow-hidden rounded-lg border border-maroon/10 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
           <a href="{{ url_for('main.detail_produk', id=p.id) }}" class="block aspect-square overflow-hidden bg-stone-200">
             {% if p.image %}
@@ -150,12 +282,18 @@
             <h3 class="text-sm font-bold leading-snug text-maroon sm:text-lg"><a href="{{ url_for('main.detail_produk', id=p.id) }}">{{ p.name }}</a></h3>
             <p class="mt-0.5 text-xs text-stone-500">{{ p.stock > 0 and '1 porsi' or 'Habis' }}</p>
             <p class="mt-2 flex items-center gap-1.5 text-sm">
-              {% if p.reviews %}
-                <span class="text-gold" aria-hidden="true">{% for i in range(5) %}★{% endfor %}</span>
+              {% if p_avg > 0 %}
+                {% set p_full = p_avg|int %}
+                {% set p_half = p_avg - p_full >= 0.5 %}
+                <span class="text-gold" aria-hidden="true">
+                  {% for i in range(p_full) %}★{% endfor %}
+                  {% if p_half %}★{% endif %}
+                  {% for i in range(5 - p_full - (1 if p_half else 0)) %}☆{% endfor %}
+                </span>
                 <span class="text-stone-500">({{ p.reviews|length }})</span>
               {% else %}
-                <span class="text-gold" aria-hidden="true">★★★★★</span>
-                <span class="text-stone-500">(0)</span>
+                <span class="text-gold" aria-hidden="true">☆☆☆☆☆</span>
+                <span class="text-stone-500">Belum ada ulasan</span>
               {% endif %}
             </p>
             <p class="mt-3 flex items-baseline gap-2"><span class="text-base font-extrabold text-maroon sm:text-xl">Rp {{ "{:,.0f}".format(p.price).replace(",", ".") }}</span></p>

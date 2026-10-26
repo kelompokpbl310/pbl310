@@ -1,76 +1,222 @@
 {% extends "dashboard/base.html" %}
 {% set active = 'pelanggan' %}
 {% block title %}Pelanggan | Dashboard Catering Batam{% endblock %}
-{% block eyebrow %}Pelanggan • 412 total{% endblock %}
+{% block eyebrow %}Pelanggan • {{ total_customers }} pelanggan ({{ active_customers }} aktif, {{ inactive_customers }} nonaktif) • {{ total_admins }} admin{% endblock %}
 {% block heading %}Pelanggan{% endblock %}
 {% block content %}
-<!-- Ledger strip -->
-<section class="grid grid-cols-1 divide-y divide-maroon/15 rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] sm:grid-cols-3 sm:divide-x sm:divide-y-0 transition-shadow hover:shadow-md" aria-label="Ringkasan pelanggan">
-  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
-    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Pelanggan baru • 30 hari</p>
-    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">28</p>
-    <p class="mt-1 text-xs text-ink/60">Banyak dari rujukan aqiqah</p>
-  </div>
-  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
-    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Repeat order</p>
-    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">63%</p>
-    <p class="mt-1 text-xs text-ink/60">Pesan ≥ 2 kali setahun</p>
-  </div>
-  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
-    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Wilayah terbanyak</p>
-    <p class="mt-1 font-opsdisplay text-2xl font-bold text-maroon-dark">Batam Centre</p>
-    <p class="mt-1 text-xs text-ink/60">138 KK • antar tiap pekan</p>
-  </div>
+<!-- Summary Cards -->
+<section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6" aria-label="Ringkasan pelanggan">
+  <article class="rounded-xl border border-maroon/15 bg-white p-5 transition-shadow hover:shadow-md">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Total Pelanggan</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">{{ total_customers }}</p>
+  </article>
+  <article class="rounded-xl border border-maroon/15 bg-white p-5 transition-shadow hover:shadow-md">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Aktif</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-emerald-600">{{ active_customers }}</p>
+    <a href="{{ url_for('admin.pelanggan', status='active') }}" class="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:underline">Lihat <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
+  </article>
+  <article class="rounded-xl border border-maroon/15 bg-white p-5 transition-shadow hover:shadow-md">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Nonaktif</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-stone-600">{{ inactive_customers }}</p>
+    <a href="{{ url_for('admin.pelanggan', status='inactive') }}" class="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-stone-600 hover:underline">Lihat <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
+  </article>
+  <article class="rounded-xl border border-maroon/15 bg-white p-5 transition-shadow hover:shadow-md">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Admin</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">{{ total_admins }}</p>
+  </article>
 </section>
 
 <!-- Toolbar -->
 <div class="mt-4 flex flex-wrap items-center gap-2">
-  <label class="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-maroon/15 bg-white px-4 py-2 text-sm sm:max-w-xs transition-all duration-150 focus-within:ring-2 focus-within:ring-gold/40 focus-within:border-gold">
-    <span aria-hidden="true" class="text-maroon/60">⌕</span>
-    <input type="search" placeholder="Cari nama / no. WA…" class="w-full bg-transparent outline-none placeholder:text-ink/40" />
-  </label>
-  <div class="ml-auto flex gap-2">
-    <button type="button" class="rounded-lg border border-maroon/25 bg-white px-4 py-2 text-xs font-bold text-maroon hover:bg-cream transition-colors">Unduh data</button>
-    <button type="button" class="rounded-lg bg-maroon px-4 py-2 text-xs font-bold text-white hover:bg-maroon-dark shadow-sm transition-all duration-150">+ Tambah pelanggan</button>
+  <form method="GET" class="flex items-center gap-2 flex-1 min-w-0">
+    <label class="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-maroon/15 bg-white px-4 py-2 text-sm sm:max-w-xs transition-all duration-150 focus-within:ring-2 focus-within:ring-gold/40 focus-within:border-gold">
+      <span aria-hidden="true" class="text-maroon/60"><i class="fa-solid fa-magnifying-glass"></i></span>
+      <input type="search" name="q" value="{{ search }}" placeholder="Cari nama / username / email…" class="w-full bg-transparent outline-none placeholder:text-ink/40" />
+    </label>
+    <button type="submit" class="rounded-lg bg-maroon px-4 py-2 text-xs font-bold text-white hover:bg-maroon-dark shadow-sm transition-all duration-150 hidden sm:inline-flex">
+      <i class="fa-solid fa-search mr-1"></i>Cari
+    </button>
+  </form>
+
+  <div class="flex flex-wrap items-center gap-2 ml-auto">
+    <!-- Role Filter -->
+    <select name="role" id="role-filter" class="rounded-lg border border-maroon/15 bg-white px-4 py-2 text-xs font-bold text-maroon focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold" onchange="updateFilters()">
+      <option value="">Semua Peran</option>
+      <option value="customer" {% if role_filter == 'customer' %}selected{% endif %}>Pelanggan</option>
+      <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
+    </select>
+
+    <!-- Status Filter -->
+    <select name="status" id="status-filter" class="rounded-lg border border-maroon/15 bg-white px-4 py-2 text-xs font-bold text-maroon focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold" onchange="updateFilters()">
+      <option value="">Semua Status</option>
+      <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Aktif</option>
+      <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Nonaktif</option>
+    </select>
+
+    <!-- Clear filters -->
+    {% if role_filter or status_filter or search %}
+    <a href="{{ url_for('admin.pelanggan') }}" class="rounded-lg border border-maroon/25 bg-white px-4 py-2 text-xs font-bold text-maroon hover:bg-cream transition-colors">
+      <i class="fa-solid fa-xmark mr-1"></i>Bersihkan
+    </a>
+    {% endif %}
   </div>
 </div>
+
+<!-- Hidden form for filter submission -->
+<form id="filter-form" method="GET" class="hidden">
+  <input type="hidden" name="q" value="{{ search }}">
+  <input type="hidden" name="role" id="filter-role" value="">
+  <input type="hidden" name="status" id="filter-status" value="">
+</form>
 
 <!-- Tabel pelanggan -->
 <section class="mt-4 overflow-hidden rounded-xl border border-maroon/15 bg-white transition-shadow hover:shadow-md">
   <div class="flex flex-wrap items-center justify-between gap-2 border-b border-maroon/15 bg-paper px-5 py-3">
     <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark">Buku pelanggan dapur</h2>
-    <span class="rounded-lg bg-cream px-3 py-1 text-xs font-bold text-maroon-dark">4 ditampilkan</span>
+    <span class="rounded-lg bg-cream px-3 py-1 text-xs font-bold text-maroon-dark">
+      Menampilkan {{ users|length }} dari {{ pagination.total }}
+    </span>
   </div>
   <div class="overflow-x-auto">
-    <table class="w-full min-w-[680px] text-left text-sm">
+    <table class="w-full min-w-[720px] text-left text-sm">
       <thead>
         <tr class="border-b border-maroon/15 text-[11px] uppercase tracking-widest text-maroon/60">
           <th class="px-5 py-3">Nama</th>
           <th class="px-3 py-3">Kontak</th>
-          <th class="hidden px-3 py-3 sm:table-cell">Acara terakhir</th>
-          <th class="px-5 py-3 text-right">Total belanja</th>
+          <th class="hidden px-3 py-3 sm:table-cell">Peran</th>
+          <th class="hidden px-3 py-3 md:table-cell">Status</th>
+          <th class="hidden px-3 py-3 lg:table-cell">Pesanan</th>
+          <th class="px-5 py-3 text-right">Bergabung</th>
+          <th class="px-5 py-3 text-right">Aksi</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-maroon/10">
-        {% for n, k, a, t in [('Ibu Amanda','0812-699-xxxx','Prasmanan 150 pax','Rp 4,2 jt'),('Ibu Rina','0821-7xxx-xxxx','Aqiqah 2 kambing','Rp 2,7 jt'),('H. Mahmud','0813-7xxx-xxxx','Guling 1 ekor','Rp 2,4 jt'),('Dewi Lestari','0852-7xxx-xxxx','Bento 60 box','Rp 1,2 jt')] %}
+        {% for user in users %}
         <tr class="hover:bg-cream/50 transition-colors">
           <td class="px-5 py-3">
             <span class="flex items-center gap-3">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-maroon font-opsdisplay text-sm font-bold text-cream" aria-hidden="true">{{ n[4] }}</span>
-              <span class="font-bold text-ink">{{ n }}</span>
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-maroon font-opsdisplay text-sm font-bold text-cream" aria-hidden="true">{{ user.fullname[0].upper() }}</span>
+              <span class="font-bold text-ink">{{ user.fullname }}</span>
+              <span class="text-xs text-ink/50">(@{{ user.username }})</span>
             </span>
           </td>
-          <td class="px-3 py-3 tabular-nums text-ink/70">{{ k }}</td>
-          <td class="hidden px-3 py-3 text-ink/70 sm:table-cell">{{ a }}</td>
-          <td class="px-5 py-3 text-right font-bold tabular-nums text-maroon-dark">{{ t }}</td>
+          <td class="px-3 py-3 tabular-nums text-ink/70">
+            <p>{{ user.email }}</p>
+            {% if user.phone %}<p class="text-xs">{{ user.phone }}</p>{% endif %}
+          </td>
+          <td class="hidden px-3 py-3 sm:table-cell">
+            <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold {% if user.role == 'admin' %}bg-violet-100 text-violet-700{% else %}bg-blue-100 text-blue-700{% endif %}">
+              {% if user.role == 'admin' %}<i class="fa-solid fa-user-shield"></i>{% else %}<i class="fa-solid fa-user"></i>{% endif %}
+              {{ user.role|capitalize }}
+            </span>
+          </td>
+          <td class="hidden px-3 py-3 md:table-cell">
+            {% if user.is_active %}
+            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">
+              <i class="fa-solid fa-circle-check text-[10px]"></i>Aktif
+            </span>
+            {% else %}
+            <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs font-bold text-stone-600">
+              <i class="fa-solid fa-circle-xmark text-[10px]"></i>Nonaktif
+            </span>
+            {% endif %}
+          </td>
+          <td class="hidden px-3 py-3 lg:table-cell text-center font-bold tabular-nums text-maroon-dark">
+            {{ user_order_counts.get(user.id, 0) }}
+          </td>
+          <td class="px-5 py-3 text-right text-xs text-ink/60 whitespace-nowrap">{{ user.created_at.strftime('%d %b %Y') }}</td>
+          <td class="px-5 py-3 text-right">
+            <div class="flex justify-end gap-1">
+              {% if not user.is_active %}
+              <form method="POST" action="{{ url_for('admin.pelanggan_activate', user_id=user.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition-colors" title="Aktifkan">
+                  <i class="fa-solid fa-user-check"></i>
+                </button>
+              </form>
+              {% else %}
+              <form method="POST" action="{{ url_for('admin.pelanggan_deactivate', user_id=user.id) }}" class="inline" onsubmit="return confirm('Nonaktifkan {{ user.fullname }}? Mereka tidak bisa login.')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-700 transition-colors" title="Nonaktifkan">
+                  <i class="fa-solid fa-user-slash"></i>
+                </button>
+              </form>
+              {% endif %}
+
+              {% if user_order_counts.get(user.id, 0) == 0 %}
+              <form method="POST" action="{{ url_for('admin.pelanggan_delete', user_id=user.id) }}" class="inline" onsubmit="return confirm('HAPUS {{ user.fullname }}? Tindakan ini tidak dapat dibatalkan.')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="rounded-md border border-red-300 bg-white px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors" title="Hapus">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </form>
+              {% else %}
+              <span class="flex h-8 items-center px-2 text-xs text-ink/40" title="Memiliki pesanan, tidak bisa dihapus">
+                <i class="fa-solid fa-lock"></i>
+              </span>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td class="px-6 py-8 text-center text-sm text-ink/60" colspan="7">Tidak ada pelanggan dengan filter ini.</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+
+  <!-- Pagination -->
+  {% if pagination.pages > 1 %}
   <div class="flex flex-wrap items-center justify-between gap-2 border-t border-maroon/15 px-5 py-3 text-xs text-ink/60">
-    <p>Catat no. WA aktif agar undangan syukuran terkirim.</p>
-    <p class="font-bold text-maroon">Halaman 1 / 103</p>
+    <p>Menampilkan {{ ((pagination.page - 1) * pagination.per_page) + 1 }} - {{ [pagination.page * pagination.per_page, pagination.total] | min }} dari {{ pagination.total }} pelanggan</p>
+    <div class="flex gap-1">
+      {% if pagination.has_prev %}
+      <a href="{{ url_for('admin.pelanggan', page=pagination.prev_num, q=search, role=role_filter, status=status_filter) }}" class="rounded-lg border border-maroon/25 bg-white px-3 py-1.5 text-xs font-bold text-maroon hover:bg-cream transition-colors">
+        <i class="fa-solid fa-chevron-left"></i>
+      </a>
+      {% endif %}
+      {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if p %}
+          {% if p == pagination.page %}
+          <span class="rounded-lg bg-maroon px-3 py-1.5 text-xs font-bold text-white">{{ p }}</span>
+          {% else %}
+          <a href="{{ url_for('admin.pelanggan', page=p, q=search, role=role_filter, status=status_filter) }}" class="rounded-lg border border-maroon/25 bg-white px-3 py-1.5 text-xs font-bold text-maroon hover:bg-cream transition-colors">{{ p }}</a>
+          {% endif %}
+        {% else %}
+        <span class="px-2 text-ink/40">…</span>
+        {% endif %}
+      {% endfor %}
+      {% if pagination.has_next %}
+      <a href="{{ url_for('admin.pelanggan', page=pagination.next_num, q=search, role=role_filter, status=status_filter) }}" class="rounded-lg border border-maroon/25 bg-white px-3 py-1.5 text-xs font-bold text-maroon hover:bg-cream transition-colors">
+        <i class="fa-solid fa-chevron-right"></i>
+      </a>
+      {% endif %}
+    </div>
   </div>
+  {% endif %}
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Filter form submission
+  const roleSelect = document.getElementById('role-filter');
+  const statusSelect = document.getElementById('status-filter');
+  const filterForm = document.getElementById('filter-form');
+  const filterRoleInput = document.getElementById('filter-role');
+  const filterStatusInput = document.getElementById('filter-status');
+
+  function updateFilters() {
+    if (filterForm && filterRoleInput && filterStatusInput) {
+      filterRoleInput.value = roleSelect ? roleSelect.value : '';
+      filterStatusInput.value = statusSelect ? statusSelect.value : '';
+      filterForm.submit();
+    }
+  }
+
+  if (roleSelect) roleSelect.addEventListener('change', updateFilters);
+  if (statusSelect) statusSelect.addEventListener('change', updateFilters);
+});
+</script>
 {% endblock %}

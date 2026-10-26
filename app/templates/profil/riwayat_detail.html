@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block title %}{{ order.order_code }} | Catering Batam{% endblock %}
+{% block description %}Detail pesanan {{ order.order_code }}.{% endblock %}
+{% block content %}
+<!-- Side Panel Layout -->
+<div class="min-h-screen bg-cream scroll-mt-24">
+  <div class="lg:flex">
+    {% set active_tab = 'riwayat' %}
+    {% include 'profil/sidebar.html' %}
+    
+    <!-- Main Content -->
+    <main class="lg:flex-1 min-h-screen">
+      <section class="py-8 bg-cream min-h-screen">
+        <div class="w-full px-6 sm:px-12 lg:px-20">
+          <div class="p-6 sm:p-8 lg:p-10">
+          {% include 'profil/mobile_nav.html' %}
+          {% include '_flash_messages.html' %}
+
+          <!-- ORDER DETAIL -->
+          <section class="space-y-6" aria-labelledby="order-detail-label">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 id="order-detail-label" class="font-display text-lg font-bold text-maroon-dark">Detail Pesanan</h3>
+                <p class="text-sm text-ink/60">#{{ order.order_code }}</p>
+              </div>
+              <a href="{{ url_for('main.profil_riwayat') }}" class="inline-flex items-center gap-1.5 text-sm font-semibold text-maroon hover:underline">
+                <i class="fa-solid fa-arrow-left"></i> Kembali ke Riwayat
+              </a>
+            </div>
+
+            <!-- Status Badge (Horizontal, compact) -->
+            <div class="rounded-2xl border border-maroon/10 bg-cream p-4 shadow-xl">
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="text-sm font-bold text-maroon">Status:</span>
+                {% set status_order = ['pending_payment', 'waiting_verification', 'paid', 'processing', 'delivered', 'cancelled'] %}
+                {% set status_labels = {
+                  'pending_payment': 'Menunggu Pembayaran',
+                  'waiting_verification': 'Menunggu Verifikasi',
+                  'paid': 'Dibayar',
+                  'processing': 'Diproses',
+                  'delivered': 'Selesai',
+                  'cancelled': 'Dibatalkan'
+                } %}
+                {% set status_colors = {
+                  'pending_payment': 'amber',
+                  'waiting_verification': 'blue',
+                  'paid': 'indigo',
+                  'processing': 'violet',
+                  'delivered': 'emerald',
+                  'cancelled': 'stone'
+                } %}
+                {% set current_idx = status_order.index(order.status) if order.status in status_order else 0 %}
+                {% set show_keys = [status_order[current_idx]] + (status_order[current_idx+1:] if current_idx < status_order|length - 1 else []) %}
+                {% for step_key in show_keys[:2] %}
+                  <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold
+                              {% if loop.first %}bg-{{status_colors[step_key]}}-100 text-{{status_colors[step_key]}}-700{% else %}bg-stone-100 text-stone-500{% endif %}">
+                    {% if loop.first %}
+                      <i class="fa-solid fa-circle-check w-3.5 h-3.5"></i>
+                    {% else %}
+                      <i class="fa-solid fa-chevron-right w-3.5 h-3.5"></i>
+                    {% endif %}
+                    {{ status_labels[step_key] }}
+                    {% if loop.first %}<span class="text-[10px] font-normal text-{{status_colors[step_key]}}-600">(sekarang)</span>{% endif %}
+                  </span>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Order Info Grid -->
+            <div class="grid gap-6 lg:grid-cols-2">
+              <!-- Items -->
+              <div class="rounded-2xl border border-maroon/10 bg-cream p-6 shadow-xl">
+                <h4 class="text-sm font-bold text-maroon mb-4">Item Pesanan</h4>
+                <div class="space-y-4">
+                  {% for item in order.items %}
+                  <div class="flex items-center gap-4 rounded-lg border border-maroon/10 bg-white p-4">
+                    <a href="{{ url_for('main.detail_produk', id=item.product_id) }}" class="block h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-maroon/10 bg-stone-200" aria-label="{{ item.product_name }}">
+                      {% if item.product and item.product.image %}
+                      <img src="{{ url_for('static', filename=item.product.image.replace('static/', '')) }}" alt="{{ item.product_name }}" loading="lazy" class="h-full w-full object-cover">
+                      {% else %}
+                      <div class="flex h-full w-full items-center justify-center text-xs text-stone-500">No image</div>
+                      {% endif %}
+                    </a>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-semibold text-maroon truncate">{{ item.product_name }}</p>
+                      <p class="text-xs text-stone-500">{{ item.quantity }} × Rp {{ "{:,.0f}".format(item.unit_price).replace(",", ".") }}</p>
+                    </div>
+                    <p class="whitespace-nowrap text-sm font-semibold text-maroon">Rp {{ "{:,.0f}".format(item.subtotal).replace(",", ".") }}</p>
+                  </div>
+                  {% endfor %}
+                </div>
+                <div class="mt-4 border-t border-maroon/15 pt-4 space-y-2 text-sm text-maroon/85">
+                  <p class="flex justify-between">
+                    <span>Subtotal ({{ order.items|length }} item)</span>
+                    <span class="font-semibold">Rp {{ "{:,.0f}".format(order.total_price).replace(",", ".") }}</span>
+                  </p>
+                  <p class="flex justify-between">
+                    <span>Ongkos Kirim (Area Batam)</span>
+                    <span class="font-bold uppercase text-emerald-700">Gratis</span>
+                  </p>
+                  <p class="flex justify-between border-t border-maroon/15 pt-3 text-base font-bold text-maroon">
+                    <span>Total</span>
+                    <span>Rp {{ "{:,.0f}".format(order.total_price).replace(",", ".") }}</span>
+                  </p>
+                </div>
+              </div>
+
+              <!-- Delivery & Payment Info -->
+              <div class="rounded-2xl border border-maroon/10 bg-cream p-6 shadow-xl space-y-6">
+                <div>
+                  <h4 class="text-sm font-bold text-maroon mb-3">Informasi Pengiriman</h4>
+                  <dl class="space-y-3 text-sm text-maroon/85">
+                    <div class="grid grid-cols-3 gap-2">
+                      <dt class="font-semibold">Penerima:</dt>
+                      <dd class="col-span-2">{{ order.recipient_name }}</dd>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                      <dt class="font-semibold">Telepon:</dt>
+                      <dd class="col-span-2">{{ order.phone }}</dd>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                      <dt class="font-semibold">Alamat:</dt>
+                      <dd class="col-span-2">{{ order.address }}, {{ order.city }}</dd>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                      <dt class="font-semibold">Tanggal:</dt>
+                      <dd class="col-span-2">{{ order.delivery_date.strftime('%d %B %Y') }}</dd>
+                    </div>
+                    {% if order.delivery_time %}
+                    <div class="grid grid-cols-3 gap-2">
+                      <dt class="font-semibold">Waktu:</dt>
+                      <dd class="col-span-2">{{ order.delivery_time }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if order.notes %}
+                    <div class="grid grid-cols-3 gap-2">
+                      <dt class="font-semibold">Catatan:</dt>
+                      <dd class="col-span-2">{{ order.notes }}</dd>
+                    </div>
+                    {% endif %}
+                  </dl>
+                </div>
+
+                <div class="border-t border-maroon/10 pt-6">
+                  <h4 class="text-sm font-bold text-maroon mb-3">Pembayaran</h4>
+                  <dl class="space-y-3 text-sm text-maroon/85">
+                    <div class="grid grid-cols-3 gap-2">
+                      <dt class="font-semibold">Metode:</dt>
+                      <dd class="col-span-2">
+                        {% if order.payment_method == 'transfer' %}
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                          <i class="fa-solid fa-university"></i> Transfer Bank
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                          <i class="fa-solid fa-hand-holding-dollar"></i> COD (Bayar di Tempat)
+                        </span>
+                        {% endif %}
+                      </dd>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                      <dt class="font-semibold">Total:</dt>
+                      <dd class="col-span-2 font-bold text-maroon">Rp {{ "{:,.0f}".format(order.total_price).replace(",", ".") }}</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- Transfer Instructions / Payment Proof -->
+                {% if order.payment_method == 'transfer' and order.status == 'pending_payment' %}
+                <div class="border-t border-maroon/10 pt-6 rounded-xl bg-amber-50 p-4 border-amber-200">
+                  <h4 class="text-sm font-bold text-amber-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info"></i> Instruksi Pembayaran Transfer
+                  </h4>
+                  <div class="space-y-2 text-sm text-amber-700">
+                    <p><strong>Bank:</strong> BCA / Mandiri / BSI / BNI</p>
+                    <p><strong>No. Rekening:</strong> 1234567890 a.n. Catering Batam</p>
+                    <p><strong>Jumlah:</strong> Rp {{ "{:,.0f}".format(order.total_price).replace(",", ".") }}</p>
+                    <p><strong>Berita Transfer:</strong> {{ order.order_code }}</p>
+                    <p class="mt-2">Setelah transfer, silakan unggah bukti pembayaran di bawah ini:</p>
+                  </div>
+                  
+                  <!-- Upload Form -->
+                  <form method="POST" action="{{ url_for('main.upload_payment_proof', order_code=order.order_code) }}" enctype="multipart/form-data" class="mt-4 space-y-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div>
+                      <label for="payment_proof" class="mb-1.5 block text-sm font-semibold text-amber-800">
+                        Bukti Transfer (JPG, PNG, WebP, PDF - Max 5MB) <span class="text-amber-600">*</span>
+                      </label>
+                      <input type="file" id="payment_proof" name="payment_proof" accept=".jpg,.jpeg,.png,.webp,.pdf" required
+                        class="w-full rounded-xl border border-amber-200 bg-white px-4 py-3 text-sm text-stone-800 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber/30">
+                    </div>
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-full bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-amber-700 w-full">
+                      <i class="fa-solid fa-upload"></i> Unggah Bukti
+                    </button>
+                  </form>
+                </div>
+                
+                {% elif order.payment_method == 'transfer' and order.status == 'waiting_verification' and order.payment_proof %}
+                <div class="border-t border-maroon/10 pt-6 rounded-xl bg-blue-50 p-4 border-blue-200">
+                  <h4 class="text-sm font-bold text-blue-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Menunggu Verifikasi Admin
+                  </h4>
+                  <p class="text-sm text-blue-700 mb-3">Bukti pembayaran telah diunggah. Silakan tunggu verifikasi dari admin (maksimal 1x24 jam).</p>
+                  
+                  {% if order.payment_proof %}
+                  <div class="rounded-lg border border-blue-200 bg-white p-3">
+                    {% if order.payment_proof.endswith('.pdf') %}
+                    <a href="{{ url_for('main.view_payment_proof', order_code=order.order_code) }}" target="_blank" class="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline">
+                      <i class="fa-solid fa-file-pdf"></i> Lihat Bukti Transfer (PDF)
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('main.view_payment_proof', order_code=order.order_code) }}" target="_blank" class="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline">
+                      <i class="fa-solid fa-image"></i> Lihat Bukti Transfer
+                    </a>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-blue-600">Diunggah pada {{ order.payment_uploaded_at.strftime('%d %B %Y %H:%M') }}</p>
+                  </div>
+                  {% endif %}
+                </div>
+                
+                {% elif order.payment_method == 'transfer' and order.status == 'pending_payment' and order.payment_proof and order.rejection_reason %}
+                <div class="border-t border-maroon/10 pt-6 rounded-xl bg-red-50 p-4 border-red-200">
+                  <h4 class="text-sm font-bold text-red-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation"></i> Bukti Ditolak
+                  </h4>
+                  <p class="text-sm text-red-700 mb-3"><strong>Alasan:</strong> {{ order.rejection_reason }}</p>
+                  <p class="text-sm text-red-700 mb-3">Silakan unggah ulang bukti pembayaran yang benar:</p>
+                  
+                  <!-- Re-upload Form -->
+                  <form method="POST" action="{{ url_for('main.upload_payment_proof', order_code=order.order_code) }}" enctype="multipart/form-data" class="mt-4 space-y-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div>
+                      <label for="payment_proof" class="mb-1.5 block text-sm font-semibold text-red-800">
+                        Bukti Transfer Baru (JPG, PNG, WebP, PDF - Max 5MB) <span class="text-red-600">*</span>
+                      </label>
+                      <input type="file" id="payment_proof" name="payment_proof" accept=".jpg,.jpeg,.png,.webp,.pdf" required
+                        class="w-full rounded-xl border border-red-200 bg-white px-4 py-3 text-sm text-stone-800 focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red/30">
+                    </div>
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-full bg-red-600 px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-red-700 w-full">
+                      <i class="fa-solid fa-upload"></i> Unggah Ulang
+                    </button>
+                  </form>
+                </div>
+                
+                {% elif order.payment_proof %}
+                <div class="border-t border-maroon/10 pt-6">
+                  <h4 class="text-sm font-bold text-maroon mb-3">Bukti Pembayaran</h4>
+                  <div class="rounded-lg border border-maroon/10 bg-white p-3">
+                    {% if order.payment_proof.endswith('.pdf') %}
+                    <a href="{{ url_for('main.view_payment_proof', order_code=order.order_code) }}" target="_blank" class="inline-flex items-center gap-2 text-sm font-semibold text-maroon hover:underline">
+                      <i class="fa-solid fa-file-pdf"></i> Lihat Bukti Transfer (PDF)
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('main.view_payment_proof', order_code=order.order_code) }}" target="_blank" class="inline-flex items-center gap-2 text-sm font-semibold text-maroon hover:underline">
+                      <i class="fa-solid fa-image"></i> Lihat Bukti Transfer
+                    </a>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-maroon/70">Diunggah pada {{ order.payment_uploaded_at.strftime('%d %B %Y %H:%M') }}</p>
+                  </div>
+                </div>
+                {% endif %}
+
+                <!-- Cancel Button -->
+                {% if order.can_customer_cancel() %}
+                <div class="border-t border-maroon/10 pt-6">
+                  <form method="POST" action="{{ url_for('main.order_cancel', order_code=order.order_code) }}" onsubmit="return confirm('Yakin ingin membatalkan pesanan ini? Stok akan dikembalikan.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-full border-2 border-red-400 px-6 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700 w-full">
+                      <i class="fa-solid fa-ban"></i> Batalkan Pesanan
+                    </button>
+                  </form>
+                  <p class="mt-2 text-xs text-stone-500 text-center">Hanya bisa dibatalkan sebelum pembayaran (status: Menunggu Pembayaran).</p>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Order Meta -->
+            <div class="rounded-xl border border-maroon/10 bg-white p-4 text-sm text-maroon/70">
+              <dl class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <dt>Dibuat pada:</dt>
+                <dd class="font-semibold">{{ order.created_at.strftime('%d %B %Y %H:%M') }}</dd>
+                <dt>Diperbarui:</dt>
+                <dd class="font-semibold">{{ order.updated_at.strftime('%d %B %Y %H:%M') }}</dd>
+                <dt>User ID:</dt>
+                <dd class="font-semibold">{{ order.user_id }}</dd>
+              </dl>
+            </div>
+          </section>
+        </div>
+      </div>
+      </section>
+    </main>
+  </div>
+</div>
+{% endblock %}

@@ -1,71 +1,170 @@
 {% extends "dashboard/base.html" %}
 {% set active = 'laporan' %}
 {% block title %}Laporan | Dashboard Catering Batam{% endblock %}
-{% block eyebrow %}Laporan • Oktober 2026{% endblock %}
-{% block heading %}Laporan{% endblock %}
+{% block eyebrow %}Laporan • {{ format_id_date(start_date_obj) }} s.d. {{ format_id_date(end_date_obj) }}{% endblock %}
+{% block heading %}Laporan Transaksi{% endblock %}
 {% block content %}
-<!-- Ledger strip -->
-<section class="grid grid-cols-1 divide-y divide-maroon/15 rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] sm:grid-cols-3 sm:divide-x sm:divide-y-0 transition-shadow hover:shadow-md" aria-label="Ringkasan laporan">
-  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
-    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Omzet bulan ini</p>
-    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">Rp 64,2 jt</p>
-    <p class="mt-1 text-xs font-bold text-maroon">▲ 9% vs September</p>
-  </div>
-  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
-    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Pesanan selesai</p>
-    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">87</p>
-    <p class="mt-1 text-xs text-ink/60">12 aqiqah • 75 lainnya</p>
-  </div>
-  <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
-    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Rata-rata / pesanan</p>
-    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">Rp 738 rb</p>
-    <p class="mt-1 text-xs text-ink/60">Naik Rp 41 rb bulan lalu</p>
-  </div>
+<!-- Date Range Filter -->
+<div class="mb-4 flex flex-wrap items-center gap-2">
+  <form method="GET" class="flex flex-wrap items-center gap-2">
+    <label class="text-xs font-bold text-maroon/60">Dari:</label>
+    <input type="date" name="date_from" value="{{ date_from }}" class="rounded-lg border border-maroon/15 bg-white px-3 py-2 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold" />
+    <label class="text-xs font-bold text-maroon/60">Sampai:</label>
+    <input type="date" name="date_to" value="{{ date_to }}" class="rounded-lg border border-maroon/15 bg-white px-3 py-2 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold" />
+    <button type="submit" class="rounded-lg bg-maroon px-4 py-2 text-xs font-bold text-white hover:bg-maroon-dark shadow-sm transition-all duration-150">
+      <i class="fa-solid fa-filter mr-1"></i>Filter
+    </button>
+    <a href="{{ url_for('admin.laporan', export='excel', date_from=date_from, date_to=date_to) }}" class="rounded-lg border border-maroon/25 bg-white px-4 py-2 text-xs font-bold text-maroon hover:bg-cream transition-colors">
+      <i class="fa-solid fa-file-excel mr-1"></i>Unduh Excel
+    </a>
+    <a href="{{ url_for('admin.laporan', export='pdf', date_from=date_from, date_to=date_to) }}" target="_blank" class="rounded-lg bg-maroon px-4 py-2 text-xs font-bold text-white hover:bg-maroon-dark shadow-sm transition-all duration-150">
+      <i class="fa-solid fa-file-pdf mr-1"></i>Cetak PDF
+    </a>
+  </form>
+</div>
+
+<!-- Summary Cards -->
+<section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6" aria-label="Ringkasan laporan">
+  <article class="rounded-xl border border-maroon/15 bg-white p-5 transition-shadow hover:shadow-md">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Total Omzet</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">Rp {{ "{:,.0f}".format(total_revenue).replace(',', '.') }}</p>
+    <p class="mt-1 text-xs text-ink/60">Dari {{ order_count }} pesanan selesai</p>
+  </article>
+  <article class="rounded-xl border border-maroon/15 bg-white p-5 transition-shadow hover:shadow-md">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Rata-rata / Pesanan</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">Rp {{ "{:,.0f}".format(avg_order_value).replace(',', '.') }}</p>
+    <p class="mt-1 text-xs text-ink/60">Omzet ÷ jumlah pesanan</p>
+  </article>
+  <article class="rounded-xl border border-maroon/15 bg-white p-5 transition-shadow hover:shadow-md">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Rata-rata Omzet per Hari</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">Rp {{ "{:,.0f}".format(revenue_per_day).replace(',', '.') }}</p>
+    <p class="mt-1 text-xs text-ink/60">Total omzet ÷ hari dalam periode</p>
+  </article>
+  <article class="rounded-xl border border-maroon/15 bg-white p-5 transition-shadow hover:shadow-md">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Jumlah Pesanan</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">{{ order_count }}</p>
+    <p class="mt-1 text-xs text-ink/60">Status: Dibayar, Diproses, Selesai</p>
+  </article>
 </section>
 
 <section class="mt-4 grid gap-4 xl:grid-cols-12">
-  <!-- Omzet per kategori -->
+  <!-- Omzet per kategori (payment method) -->
   <div class="rounded-xl border border-maroon/15 bg-white p-6 xl:col-span-7 transition-shadow hover:shadow-md">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark">Omzet per kategori</h2>
-      <span class="rounded-lg bg-cream px-3 py-1 text-xs font-bold text-maroon-dark">Oktober 2026</span>
+      <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark">Omzet per Metode Pembayaran</h2>
+      <span class="rounded-lg bg-cream px-3 py-1 text-xs font-bold text-maroon-dark">{{ format_id_date(start_date_obj) }} s.d. {{ format_id_date(end_date_obj) }}</span>
     </div>
     <div class="mt-5 space-y-4 text-sm">
-      {% for nama, pct, rp in [('Prasmanan & Guling','62%','Rp 39,8 jt'),('Sate & Olahan','24%','Rp 15,4 jt'),('Nasi box (Kebuli/Mandhi)','14%','Rp 9,0 jt')] %}
+      {% for method, revenue, count in revenue_by_method %}
       <div>
         <div class="flex items-baseline justify-between gap-3">
-          <span class="font-bold text-ink">{{ nama }}</span>
-          <span class="font-opsdisplay font-bold tabular-nums text-maroon-dark">{{ rp }}</span>
+          <span class="font-bold text-ink capitalize"><i class="fa-solid {% if method == 'transfer' %}fa-university{% else %}fa-money-bill-wave{% endif %} mr-1"></i>{{ method }}</span>
+          <span class="font-opsdisplay font-bold tabular-nums text-maroon-dark">Rp {{ "{:,.0f}".format(revenue).replace(',', '.') }}</span>
         </div>
-        <div class="mt-2 h-3 overflow-hidden rounded-md border border-maroon/15 bg-cream" role="img" aria-label="{{ nama }} {{ pct }}">
-          <div class="h-full rounded-sm transition-all duration-500 ease-out {% if loop.index == 2 %}bg-gold{% else %}bg-maroon{% endif %}" style="width: {{ pct }}"></div>
+        <div class="mt-2 h-3 overflow-hidden rounded-md border border-maroon/15 bg-cream" role="img" aria-label="{{ method }} {{ (revenue/total_revenue*100)|round|int }}%">
+          <div class="h-full rounded-sm transition-all duration-500 ease-out {% if loop.index == 1 %}bg-maroon{% else %}bg-gold{% endif %}" style="width: {{ (revenue/total_revenue*100)|round|int }}%"></div>
         </div>
-        <p class="mt-1 text-xs font-bold tabular-nums text-maroon/60">{{ pct }} dari total</p>
+        <p class="mt-1 text-xs font-bold tabular-nums text-maroon/60">{{ (revenue/total_revenue*100)|round|int }}% dari total • {{ count }} pesanan</p>
       </div>
+      {% else %}
+      <p class="text-center text-ink/60 py-8">Tidak ada data transaksi untuk periode ini.</p>
       {% endfor %}
-    </div>
-    <div class="mt-6 flex flex-wrap gap-2 border-t border-maroon/15 pt-5">
-      <button type="button" class="rounded-lg bg-maroon px-5 py-2.5 text-xs font-bold text-white hover:bg-maroon-dark shadow-sm transition-all duration-150">Unduh PDF</button>
-      <button type="button" class="rounded-lg border border-maroon/25 bg-white px-5 py-2.5 text-xs font-bold text-maroon hover:bg-cream transition-colors">Unduh Excel</button>
     </div>
   </div>
 
-  <!-- Kas dapur -->
+  <!-- Produk Terlaris -->
   <div class="xl:col-span-5 space-y-4">
-    <div class="rounded-xl border border-maroon/15 bg-maroon mendung p-6 text-cream transition-shadow hover:shadow-lg">
-      <p class="text-[11px] font-bold uppercase tracking-widest text-cream/70">Kas dapur minggu ini</p>
-      <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums">Rp 18,4 jt</p>
-      <dl class="mt-4 space-y-2 border-t border-cream/25 pt-4 text-sm">
-        <div class="flex justify-between gap-4"><dt class="text-cream/70">Belanja kambing (6 ekor)</dt><dd class="font-bold tabular-nums">Rp 9,1 jt</dd></div>
-        <div class="flex justify-between gap-4"><dt class="text-cream/70">Bumbu & beras</dt><dd class="font-bold tabular-nums">Rp 2,3 jt</dd></div>
-        <div class="flex justify-between gap-4"><dt class="text-cream/70">Antar & kemas</dt><dd class="font-bold tabular-nums">Rp 840 rb</dd></div>
-        <div class="flex justify-between gap-4 border-t border-cream/25 pt-2"><dt class="font-bold">Sisa kas</dt><dd class="font-opsdisplay font-bold tabular-nums text-gold">Rp 6,2 jt</dd></div>
-      </dl>
+    <div class="rounded-xl border border-maroon/15 bg-white p-6 transition-shadow hover:shadow-md">
+      <h2 class="font-opsdisplay font-bold text-maroon-dark">Produk Terlaris</h2>
+      <ul class="mt-4 space-y-3 text-sm max-h-[300px] overflow-y-auto">
+        {% for name, qty, revenue in best_products %}
+        <li class="flex items-center gap-3 p-2 rounded-lg transition-colors hover:bg-cream/50">
+          <div class="min-w-0 flex-1">
+            <p class="truncate font-bold text-maroon-dark">{{ name }}</p>
+            <p class="text-xs tabular-nums text-ink/60">{{ qty }} terjual • Rp {{ "{:,.0f}".format(revenue).replace(',', '.') }}</p>
+          </div>
+          <span class="rounded-full bg-gold px-2.5 py-1 text-xs font-extrabold text-maroon-dark">Top {{ loop.index }}</span>
+        </li>
+        {% else %}
+        <li class="text-center text-ink/60 py-4">Tidak ada data produk untuk periode ini.</li>
+        {% endfor %}
+      </ul>
     </div>
-    <div class="rounded-xl border border-maroon/15 bg-paper p-5 text-sm transition-shadow hover:shadow-md">
-      <h3 class="font-opsdisplay font-bold text-maroon-dark">Catatan juru masak</h3>
-      <p class="mt-1 leading-relaxed text-ink/70">Prasmanan menyumbang 62% omzet. Stok guling menipis — jadwalkan kulakan sebelum Jumat.</p>
+
+    <!-- Rata-rata Omzet per Hari Chart -->
+    <div class="rounded-xl border border-maroon/15 bg-white p-6 transition-shadow hover:shadow-md">
+      <h2 class="font-opsdisplay font-bold text-maroon-dark">Rata-rata Omzet per Hari</h2>
+      <div class="mt-4 flex h-48 items-end gap-1 overflow-x-auto pb-2" role="img" aria-label="Grafik rata-rata omzet harian">
+        {% set max_daily = daily_revenue|map(attribute='daily_total')|max if daily_revenue else 1 %}
+        {% for dr in daily_revenue %}
+          {% set pct = (dr.daily_total / max_daily * 100)|round|int %}
+        <div class="flex flex-1 flex-col items-center gap-2 shrink-0 w-16">
+          <div class="flex w-full flex-1 items-end rounded-md bg-cream/70 p-1">
+            <div class="w-full rounded-sm bg-maroon transition-all duration-500 ease-out" style="height: {{ pct }}%"></div>
+          </div>
+          <span class="text-[10px] font-bold text-maroon/60">{{ dr.order_date.strftime('%d/%m') }}</span>
+          <span class="text-[10px] font-bold tabular-nums text-maroon-dark">Rp {{ "{:,.0f}".format(dr.daily_total).replace(',', '.') }}</span>
+        </div>
+        {% else %}
+        <div class="flex-1 text-center text-ink/50 py-8">Tidak ada data harian untuk periode ini.</div>
+        {% endfor %}
+      </div>
     </div>
+  </div>
+</section>
+
+<!-- Detail Pesanan Table -->
+<section class="mt-6 overflow-hidden rounded-xl border border-maroon/15 bg-white transition-shadow hover:shadow-md">
+  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-maroon/15 bg-paper px-5 py-3">
+    <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark">Detail Pesanan (Status: Dibayar, Diproses, Selesai)</h2>
+    <span class="rounded-lg bg-cream px-3 py-1 text-xs font-bold text-maroon-dark">Total: {{ order_count }} pesanan</span>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[800px] text-left text-sm">
+      <thead>
+        <tr class="border-b border-maroon/15 text-[11px] uppercase tracking-widest text-maroon/60">
+          <th class="px-5 py-3">Kode Pesanan</th>
+          <th class="px-3 py-3">Pelanggan</th>
+          <th class="px-3 py-3">Tgl Pesan</th>
+          <th class="px-3 py-3">Metode Bayar</th>
+          <th class="px-3 py-3">Status</th>
+          <th class="px-5 py-3 text-right">Total</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-maroon/10">
+        {% for order in orders %}
+        <tr class="hover:bg-cream/50 transition-colors">
+          <td class="px-5 py-3 font-extrabold text-maroon">{{ order.order_code }}</td>
+          <td class="px-3 py-3">
+            <p class="font-semibold text-ink">{{ order.user.fullname }}</p>
+            <p class="text-xs text-ink/60">{{ order.user.email }}</p>
+          </td>
+          <td class="px-3 py-3">{{ order.created_at.strftime('%d %b %Y %H:%M') }}</td>
+          <td class="px-3 py-3">
+            <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold {% if order.payment_method == 'transfer' %}bg-blue-100 text-blue-700{% else %}bg-amber-100 text-amber-700{% endif %}">
+              {% if order.payment_method == 'transfer' %}<i class="fa-solid fa-university"></i>{% else %}<i class="fa-solid fa-money-bill-wave"></i>{% endif %}
+              {{ order.payment_method|capitalize }}
+            </span>
+          </td>
+          <td class="px-3 py-3">
+            {% set status_colors = {
+              'paid': 'bg-indigo-100 text-indigo-700',
+              'processing': 'bg-violet-100 text-violet-700',
+              'delivered': 'bg-emerald-100 text-emerald-700',
+            } %}
+            <span class="rounded-full px-3 py-1 text-xs font-bold {{ status_colors.get(order.status, 'bg-stone-200 text-stone-600') }}">
+              {{ order.status_label }}
+            </span>
+          </td>
+          <td class="px-5 py-3 text-right font-bold tabular-nums text-maroon-dark">Rp {{ "{:,.0f}".format(order.total_price).replace(',', '.') }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td class="px-6 py-8 text-center text-sm text-ink/60" colspan="6">Tidak ada pesanan untuk periode ini.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </section>
 {% endblock %}

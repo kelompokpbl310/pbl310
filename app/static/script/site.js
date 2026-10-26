@@ -202,6 +202,58 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }),
   );
+
+  // Star rating visual feedback
+  document.querySelectorAll('.star-radio').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      const selected = parseInt(radio.value, 10);
+      document.querySelectorAll('.star-label').forEach((label) => {
+        const starVal = parseInt(label.dataset.star, 10);
+        label.textContent = starVal <= selected ? '★' : '☆';
+      });
+    });
+  });
+  // Initialize stars on page load (for existing reviews)
+  const checkedRadio = document.querySelector('.star-radio:checked');
+  if (checkedRadio) {
+    const selected = parseInt(checkedRadio.value, 10);
+    document.querySelectorAll('.star-label').forEach((label) => {
+      const starVal = parseInt(label.dataset.star, 10);
+      label.textContent = starVal <= selected ? '★' : '☆';
+    });
+  }
+
+  // Edit review toggle
+  const editBtn = document.getElementById('edit-review-btn');
+  const cancelBtn = document.getElementById('cancel-edit-btn');
+  const reviewDisplay = document.getElementById('review-display');
+  const reviewEditForm = document.getElementById('review-edit-form');
+  if (editBtn && reviewDisplay && reviewEditForm) {
+    editBtn.addEventListener('click', () => {
+      reviewDisplay.classList.add('hidden');
+      reviewEditForm.classList.remove('hidden');
+    });
+  }
+  if (cancelBtn && reviewDisplay && reviewEditForm) {
+    cancelBtn.addEventListener('click', () => {
+      reviewEditForm.classList.add('hidden');
+      reviewDisplay.classList.remove('hidden');
+    });
+  }
+
+  // Activate tab from URL hash on page load and scroll to it
+  if (location.hash) {
+    const hashTab = location.hash.replace('#', '');
+    const tabBtn = document.querySelector(`[data-tab="${hashTab}"]`);
+    if (tabBtn) {
+      tabBtn.click();
+      // Scroll the tab panel into view after a brief delay
+      setTimeout(() => {
+        const panel = document.querySelector(`[data-panel="${hashTab}"]`);
+        if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }
   const q = $("[data-qty]");
   $("[data-qty-minus]")?.addEventListener("click", () => {
     if (q.value > 1) q.value--;
@@ -216,8 +268,11 @@ document.addEventListener("DOMContentLoaded", () => {
     b.classList.toggle("flex");
   });
   $("#checkout-form")?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    $("[data-order-success]").classList.remove("hidden");
+    const submitBtn = $("#checkout-submit");
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+    }
   });
 
   // Interactive goat cut map (only initialised on pages with #goat + #highlight)

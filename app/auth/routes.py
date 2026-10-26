@@ -19,6 +19,18 @@ def login():
         user = User.query.filter_by(username=username).first()
 
         if user and user.check_password(password):
+            if not user.is_active:
+                log_auth_event(
+                    event='login_blocked_inactive',
+                    user_id=user.id,
+                    username=user.username,
+                    role=user.role,
+                    status='failure',
+                    reason='Account is inactive'
+                )
+                flash('Akun Anda dinonaktifkan. Silakan hubungi admin.', 'error')
+                return render_template('login.html')
+
             login_user(user)
             # Log successful login - both admin and regular user
             if user.role == 'admin':
@@ -51,7 +63,7 @@ def login():
                 reason=reason,
                 level=30  # WARNING
             )
-        flash('Username atau password salah.', 'error')
+            flash('Username atau password salah.', 'error')
 
     return render_template('login.html')
 

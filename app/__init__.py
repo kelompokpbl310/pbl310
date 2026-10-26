@@ -3,6 +3,7 @@
 import os
 import logging
 from logging.handlers import RotatingFileHandler
+from datetime import datetime
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -27,7 +28,7 @@ def _configure_logging(app):
     """Configure structured logging for the application."""
     log_dir = os.path.join(app.root_path, '..', 'logs')
     os.makedirs(log_dir, exist_ok=True)
-    
+
     class ContextFormatter(logging.Formatter):
         """Formatter that adds request context if available."""
         def format(self, record):
@@ -44,7 +45,7 @@ def _configure_logging(app):
                 record.remote_addr = ''
                 record.user_agent = ''
             return super().format(record)
-    
+
     # File handler with rotation (10MB per file, keep 10 files)
     file_handler = RotatingFileHandler(
         os.path.join(log_dir, 'catering_batam.log'),
@@ -55,20 +56,20 @@ def _configure_logging(app):
         '%(asctime)s %(levelname)s [%(name)s] %(message)s | url=%(url)s method=%(method)s ip=%(remote_addr)s ua="%(user_agent)s"'
     ))
     file_handler.setLevel(logging.INFO)
-    
+
     # Console handler for development
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(ContextFormatter(
         '%(asctime)s %(levelname)s [%(name)s] %(message)s'
     ))
     console_handler.setLevel(logging.DEBUG if app.debug else logging.INFO)
-    
+
     # Configure root logger
     app.logger.addHandler(file_handler)
     app.logger.addHandler(console_handler)
     app.logger.setLevel(logging.INFO)
     app.logger.info('Catering Batam application startup')
-    
+
     # Configure security audit logger (separate JSON Lines log)
     from app.security_logging import create_security_audit_logger
     create_security_audit_logger(app)
@@ -79,6 +80,11 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-change-me')
+    # Payment proof upload folder (outside static for security)
+    app.config['PAYMENT_PROOF_UPLOAD_FOLDER'] = os.getenv(
+        'PAYMENT_PROOF_UPLOAD_FOLDER',
+        os.path.join(app.root_path, '..', 'uploads', 'payments')
+    )
 
     # Initialize extensions
     db.init_app(app)
@@ -104,14 +110,53 @@ def create_app():
     from app.admin import bp as admin_bp
     app.register_blueprint(admin_bp, url_prefix='/admin')
 
+    # Check active user on each request
+    @app.before_request
+    def check_user_active():
+        from flask_login import current_user
+        from flask import session
+        if current_user.is_authenticated and not current_user.is_active:
+            from flask_login import logout_user
+            from app.security_logging import log_auth_event
+            user_id = current_user.id
+            username = current_user.username
+            role = current_user.role
+            logout_user()
+            session.clear()
+            log_auth_event(
+                event='user_logout',
+                user_id=user_id,
+                username=username,
+                role=role,
+                status='success',
+                reason='Account deactivated during session'
+            )
+
     # Configure logging
     _configure_logging(app)
 
     # Template context processors
     @app.context_processor
     def utility_processor():
+        ID_MONTHS = [
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ]
+
         def rp(n):
             return 'Rp ' + f'{n:,}'.replace(',', '.')
-        return dict(rp=rp)
+
+        def format_id_date(d):
+            """Format date with Indonesian month name. Accepts date, datetime, or ISO string."""
+            if isinstance(d, str):
+                try:
+                    d = datetime.strptime(d, '%Y-%m-%d').date()
+                except ValueError:
+                    return d
+            if hasattr(d, 'day') and hasattr(d, 'month') and hasattr(d, 'year'):
+                return f'{d.day} {ID_MONTHS[d.month - 1]} {d.year}'
+            return str(d)
+
+        return dict(rp=rp, format_id_date=format_id_date)
 
     return app

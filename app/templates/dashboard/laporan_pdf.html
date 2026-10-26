@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Laporan Transaksi - Catering Batam</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Julius+Sans+One&family=Salsa&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Comic Neue', sans-serif; color: #1a1a1a; line-height: 1.5; padding: 20px; max-width: 800px; margin: 0 auto; }
+    .font-display { font-family: 'Salsa', cursive; }
+    .font-logo { font-family: 'Julius Sans One', sans-serif; }
+    .text-maroon { color: #8B0000; }
+    .text-maroon-dark { color: #5D0000; }
+    .text-gold { color: #B8860B; }
+    .bg-cream { background-color: #FFFDF4; }
+    .border-maroon { border-color: #8B0000; }
+    
+    @media print {
+      body { padding: 0; }
+      .no-print { display: none !important; }
+      @page { 
+        margin: 15mm 20mm; 
+        size: auto;
+      }
+      /* Avoid forced page breaks */
+      .section { page-break-inside: avoid; }
+      table { page-break-inside: auto; }
+      tr { page-break-inside: avoid; page-break-after: auto; }
+      thead { display: table-header-group; }
+      tfoot { display: table-footer-group; }
+      .footer { page-break-before: avoid; }
+    }
+    
+    .header { text-align: center; border-bottom: 3px solid #8B0000; padding-bottom: 20px; margin-bottom: 30px; }
+    .logo { font-family: 'Julius Sans One', sans-serif; font-size: 28px; color: #8B0000; }
+    .subtitle { color: #666; margin-top: 5px; }
+    .period { background: #FFFDF4; border: 1px solid #8B0000; padding: 10px; border-radius: 8px; display: inline-block; margin-top: 10px; }
+    
+    .section { margin-bottom: 30px; }
+    .section-title { font-family: 'Salsa', cursive; font-size: 18px; color: #8B0000; border-bottom: 2px solid #8B0000; padding-bottom: 5px; margin-bottom: 15px; }
+    
+    .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .summary-card { background: #FFFDF4; border: 1px solid #8B0000; border-radius: 8px; padding: 15px; }
+    .summary-label { font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #8B0000; }
+    .summary-value { font-family: 'Salsa', cursive; font-size: 24px; font-weight: bold; color: #5D0000; margin-top: 5px; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background: #FFFDF4; color: #8B0000; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+    tr:last-child td { border-bottom: 2px solid #8B0000; }
+    
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    
+    .chart-bar { height: 20px; background: #eee; border-radius: 4px; overflow: hidden; margin: 5px 0; }
+    .chart-fill { height: 100%; background: #8B0000; border-radius: 4px; }
+    .chart-fill.gold { background: #B8860B; }
+    
+    .footer { margin-top: 30px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #ddd; padding-top: 20px; }
+    .print-btn { display: inline-block; background: #8B0000; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold; margin-top: 20px; }
+    .print-btn:hover { background: #5D0000; }
+    .print-note { font-size: 10px; color: #999; margin-top: 10px; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo font-logo">Catering Batam</div>
+    <div class="subtitle">Laporan Transaksi Aqiqah</div>
+    <div class="period">Periode: {{ format_id_date(start_date) }} - {{ format_id_date(end_date) }}</div>
+  </div>
+  
+  <div class="section">
+    <h2 class="section-title">Ringkasan</h2>
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Total Omzet</div>
+        <div class="summary-value">Rp {{ "{:,.0f}".format(total_revenue).replace(',', '.') }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Jumlah Pesanan</div>
+        <div class="summary-value">{{ order_count }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Rata-rata / Pesanan</div>
+        <div class="summary-value">Rp {{ "{:,.0f}".format(avg_order_value).replace(',', '.') }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Rata-rata Omzet per Hari</div>
+        <div class="summary-value">Rp {{ "{:,.0f}".format(revenue_per_day).replace(',', '.') }}</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2 class="section-title">Omzet per Metode Pembayaran</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Metode</th>
+          <th class="text-right">Omzet</th>
+          <th class="text-right">Jumlah Pesanan</th>
+          <th>Persentase</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for method, revenue, count in revenue_by_method %}
+        <tr>
+          <td>{{ method.capitalize() }}</td>
+          <td class="text-right">Rp {{ "{:,.0f}".format(revenue).replace(',', '.') }}</td>
+          <td class="text-right">{{ count }}</td>
+          <td>
+            <div class="chart-bar">
+              <div class="chart-fill {% if loop.index == 1 %}{% else %}gold{% endif %}" style="width: {{ (revenue/total_revenue*100)|round|int }}%"></div>
+            </div>
+            <small>{{ (revenue/total_revenue*100)|round|int }}%</small>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2 class="section-title">Produk Terlaris</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Produk</th>
+          <th class="text-right">Qty Terjual</th>
+          <th class="text-right">Omzet</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for name, qty, revenue in best_products %}
+        <tr>
+          <td class="text-center">{{ loop.index }}</td>
+          <td>{{ name }}</td>
+          <td class="text-right">{{ qty }}</td>
+          <td class="text-right">Rp {{ "{:,.0f}".format(revenue).replace(',', '.') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2 class="section-title">Rata-rata Omzet per Hari</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Tanggal</th>
+          <th class="text-right">Omzet</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for dr in daily_revenue %}
+        <tr>
+          <td>{{ format_id_date(dr.order_date) }}</td>
+          <td class="text-right">Rp {{ "{:,.0f}".format(dr.daily_total).replace(',', '.') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="footer">
+    <p>Dicetak pada {{ printed_at }} WIB</p>
+    <p>Catering Batam - Aqiqah Terpercaya di Batam</p>
+    <a href="javascript:window.print()" class="print-btn no-print"><i class="fa-solid fa-print"></i> Cetak / Simpan sebagai PDF</a>
+    <p class="print-note">Catatan: Header/footer browser (URL, tanggal) hanya bisa dinonaktifkan dari dialog cetak browser.</p>
+  </div>
+  
+  <script src="https://kit.fontawesome.com/5e281edb01.js" crossorigin="anonymous"></script>
+</body>
+</html>
