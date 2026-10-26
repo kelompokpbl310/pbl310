@@ -1,6 +1,7 @@
 """Database Models for Catering Batam"""
 
 from app import db
+import sqlalchemy as sa
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date
@@ -17,6 +18,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), default='customer')  # customer, admin
     is_active = db.Column(db.Boolean, default=True, server_default='true', nullable=False)
+    email_verified = db.Column(db.Boolean, default=False, server_default=sa.text('0'), nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     def set_password(self, password):
@@ -27,6 +29,23 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f'<User {self.email}>'
+
+
+class EmailOTP(db.Model):
+    __tablename__ = 'email_otps'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    code_hash = db.Column(db.String(255), nullable=False)
+    purpose = db.Column(db.String(20), default='register', nullable=False, server_default='register')
+    expires_at = db.Column(db.DateTime, nullable=False)
+    attempts = db.Column(db.Integer, default=0, nullable=False, server_default='0')
+    consumed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    user = db.relationship('User', backref='email_otps')
+
+    def __repr__(self):
+        return f'<EmailOTP id={self.id} user={self.user_id} purpose={self.purpose}>'
 
 
 class Category(db.Model):

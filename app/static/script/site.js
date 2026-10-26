@@ -1,6 +1,25 @@
 document.addEventListener("DOMContentLoaded", () => {
   const $ = (s, r = document) => r.querySelector(s),
     $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  // Resend OTP countdown
+  const resendBtn = document.getElementById('resend-btn');
+  const countdownEl = document.getElementById('countdown-seconds');
+  const countdownText = document.getElementById('resend-countdown');
+  if (resendBtn && countdownEl) {
+    let seconds = 60;
+    const tick = () => {
+      if (seconds <= 0) {
+        resendBtn.disabled = false;
+        if (countdownText) countdownText.textContent = 'Anda dapat mengirim ulang kode.';
+        return;
+      }
+      seconds--;
+      countdownEl.textContent = seconds;
+      setTimeout(tick, 1000);
+    };
+    setTimeout(tick, 1000);
+  }
   $("[data-menu-btn]")?.addEventListener("click", () =>
     $("[data-menu]").classList.toggle("hidden"),
   );
