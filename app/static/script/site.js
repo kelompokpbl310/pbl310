@@ -1,6 +1,17 @@
 document.addEventListener("DOMContentLoaded", () => {
   const $ = (s, r = document) => r.querySelector(s),
     $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  // Goat image click -> play audio (experiment)
+  $$('img[src*="goat.png"]').forEach(img => {
+    img.style.cursor = 'pointer';
+    img.title = 'Klik untuk suara kambing';
+    img.addEventListener('click', () => {
+      const audio = new Audio('/static/img/hidup-jokowi.mp3');
+      audio.play().catch(() => {});
+    });
+  });
+
   $("[data-menu-btn]")?.addEventListener("click", () =>
     $("[data-menu]").classList.toggle("hidden"),
   );
