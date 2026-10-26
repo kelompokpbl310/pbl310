@@ -4,8 +4,8 @@
 {% block content %}
 <!-- Hero / Breadcrumb -->
 <section class="bg-cream">
-  <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20 flex items-end justify-between gap-6 pt-10 lg:pt-12">
-    <div class="pb-10 lg:pb-12">
+  <div class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20 flex flex-wrap items-end justify-between gap-4 sm:gap-6 pt-10 lg:pt-12">
+    <div class="min-w-0 flex-1 pb-10 lg:pb-12">
       <span class="inline-block -rotate-2 border-2 border-maroon px-2 py-0.5 text-[11px] font-bold tracking-[0.14em] text-maroon">Pemesanan</span>
       <h1 class="mt-1 font-display text-4xl font-black tracking-tight text-maroon-dark lg:text-5xl">Keranjang Belanja</h1>
       <nav aria-label="Breadcrumb" class="mt-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-maroon/70">
@@ -16,7 +16,7 @@
         <span class="font-bold text-maroon">Keranjang</span>
       </nav>
     </div>
-    <img src="{{ url_for('static', filename='img/goat.png') }}" alt="Kambing putih" class="h-44 w-auto shrink-0 object-contain lg:h-56">
+    <img src="{{ url_for('static', filename='img/goat.png') }}" alt="Kambing putih" class="hidden h-auto max-w-[160px] shrink-0 object-contain sm:block sm:h-32 sm:w-auto md:h-40 md:max-w-[208px] lg:h-56 lg:max-w-none">
   </div>
 </section>
 

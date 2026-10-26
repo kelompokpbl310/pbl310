@@ -5,7 +5,7 @@ dan kambing guling khas rempah pilihan.{% endblock %} {% block content %}
   <div
     class="mx-auto w-full max-w-7xl px-6 sm:px-12 lg:px-20 grid items-end gap-8 pt-14 lg:grid-cols-12 lg:pt-20"
   >
-    <div class="pb-14 lg:col-span-7 lg:pb-24">
+    <div class="min-w-0 pb-14 lg:col-span-7 lg:pb-24">
       <h1 class="text-4xl font-extrabold leading-tight text-maroon lg:text-5xl">
         Catering Aqiqah<br />Terbaik Di Batam
       </h1>
@@ -28,11 +28,11 @@ dan kambing guling khas rempah pilihan.{% endblock %} {% block content %}
         >
       </div>
     </div>
-    <div class="hidden md:block justify-center lg:col-span-5 lg:flex lg:justify-end">
+    <div class="hidden sm:block lg:col-span-5 lg:flex lg:justify-end">
       <img
         src="{{ url_for('static', filename='img/goat.png') }}"
         alt="Kambing putih"
-        class="-mb-12 h-80 w-auto object-contain lg:h-[30rem]"
+        class="h-auto max-w-[160px] shrink-0 object-contain sm:h-32 md:h-40 lg:h-[30rem] lg:max-w-none"
       />
     </div>
   </div>
