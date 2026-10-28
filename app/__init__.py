@@ -163,4 +163,39 @@ def create_app():
 
         return dict(rp=rp, format_id_date=format_id_date)
 
+    # CLI command: flask midtrans-sync
+    @app.cli.command('midtrans-sync')
+    def midtrans_sync_command():
+        """Sync pending Midtrans orders with Midtrans Get Status API."""
+        from app.payments import sync_midtrans_status
+        from app.models import Order
+        from datetime import timedelta, datetime, timezone
+
+        cutoff = datetime.now(timezone.utc) - timedelta(days=2)
+        orders = Order.query.filter(
+            Order.status == Order.STATUS_PENDING_PAYMENT,
+            Order.midtrans_order_id.isnot(None),
+            Order.created_at >= cutoff,
+        ).all()
+
+        checked = 0
+        paid = 0
+        cancelled = 0
+        unchanged = 0
+        errors = 0
+
+        for order in orders:
+            try:
+                result = sync_midtrans_status(order, source='cron')
+                checked += result.get('checked', 0)
+                paid += result.get('paid', 0)
+                cancelled += result.get('cancelled', 0)
+                unchanged += result.get('unchanged', 0)
+                errors += result.get('error', 0)
+            except Exception as e:
+                errors += 1
+                app.logger.error(f'midtrans-sync error for {order.order_code}: {e}')
+
+        print(f'midtrans-sync: checked={checked} paid={paid} cancelled={cancelled} unchanged={unchanged} errors={errors}')
+
     return app

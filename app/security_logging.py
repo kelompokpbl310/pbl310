@@ -14,6 +14,18 @@ from typing import Optional, Any
 from flask import has_request_context, request
 
 
+def get_client_ip() -> Optional[str]:
+    """Ambil IP asli klien dari header Cloudflare, fallback ke remote_addr."""
+    if not has_request_context():
+        return None
+    ip = request.headers.get("CF-Connecting-IP")
+    if ip:
+        return ip.strip()
+    xff = request.headers.get("X-Forwarded-For")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.remote_addr
+
 class JSONAuditFormatter(logging.Formatter):
     """JSON formatter for security audit events.
     
@@ -48,7 +60,7 @@ class JSONAuditFormatter(logging.Formatter):
                 # Use path only, not full URL with query string
                 audit_event["request_path"] = request.path
             if audit_event["srcip"] is None:
-                audit_event["srcip"] = request.remote_addr
+                audit_event["srcip"] = get_client_ip()
             if audit_event["user_agent"] is None:
                 audit_event["user_agent"] = request.headers.get('User-Agent', '')
         

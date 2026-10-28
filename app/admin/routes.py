@@ -376,35 +376,11 @@ def pesanan_check_midtrans(order_code):
         return redirect(url_for('admin.pesanan_detail', order_code=order_code))
 
     try:
-        import midtransclient
-        import os
-        api_client = midtransclient.CoreApi(
-            is_production=os.getenv('MIDTRANS_IS_PRODUCTION', 'false').lower() == 'true',
-            server_key=os.getenv('MIDTRANS_SERVER_KEY', ''),
-            client_key=os.getenv('MIDTRANS_CLIENT_KEY', ''),
-        )
-        status_response = api_client.transactions.status(order.midtrans_order_id)
-        transaction_status = status_response.get('transaction_status')
-        payment_type = status_response.get('payment_type')
-        transaction_id = status_response.get('transaction_id')
-
-        order.midtrans_transaction_id = transaction_id
-        order.midtrans_payment_type = payment_type
-
-        if transaction_status in ('settlement', 'capture') and status_response.get('fraud_status') in (None, 'accept'):
-            if order.status != Order.STATUS_PAID:
-                order.paid_at = datetime.now(timezone.utc)
-                order.transition_to(Order.STATUS_PAID)
-        elif transaction_status in ('expire', 'cancel', 'deny'):
-            if order.status not in (Order.STATUS_CANCELLED,):
-                for item in order.items:
-                    product = db.session.get(Product, item.product_id)
-                    if product:
-                        product.stock += item.quantity
-                order.transition_to(Order.STATUS_CANCELLED)
-
-        db.session.commit()
-        flash(f'Status Midtrans: {transaction_status} ({payment_type})', 'info')
+        from app.payments import sync_midtrans_status
+        result = sync_midtrans_status(order, source='admin')
+        # Refresh order from DB
+        db.session.refresh(order)
+        flash(f'Status Midtrans disinkronkan. Status: {order.status}', 'info')
     except Exception as e:
         flash(f'Gagal mengecek status Midtrans: {str(e)}', 'error')
 

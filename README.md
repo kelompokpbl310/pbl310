@@ -229,6 +229,14 @@ flask db upgrade
 - `.batik-light` — Batik kawung (cream surfaces, explicit only)
 - `.mendung` / `.bg-maroon` / `.bg-maroon-dark` — Mega mendung cloud waves (red surfaces)
 
+## Midtrans Sync (Cron)
+
+Jalankan perintah berikut setiap 5 menit untuk sinkronisasi status pembayaran Midtrans:
+
+```cron
+*/5 * * * * cd /path/to/app && .venv/bin/flask midtrans-sync
+```
+
 ## Next: Phase 2 - Admin CRUD
 
 Prioritas:

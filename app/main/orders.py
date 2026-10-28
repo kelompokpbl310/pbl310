@@ -18,7 +18,15 @@ import uuid
 def order_detail(order_code):
     """Order detail page"""
     order = Order.query.filter_by(order_code=order_code, user_id=current_user.id).first_or_404()
-    
+
+    # Sync Midtrans status if pending
+    if order.status == Order.STATUS_PENDING_PAYMENT and order.midtrans_order_id:
+        try:
+            from app.payments import sync_midtrans_status
+            sync_midtrans_status(order, source='return')
+        except Exception as e:
+            current_app.logger.warning(f'Midtrans sync on return failed: {e}')
+
     # Encourage review if order is delivered and has unreviewed products
     if order.status == Order.STATUS_DELIVERED:
         unreviewed = []
@@ -278,31 +286,9 @@ def midtrans_notification():
     if not order:
         return jsonify({'status': 'ok'}), 200
 
-    # Idempotent: already paid or cancelled
-    if order.status in (Order.STATUS_PAID, Order.STATUS_PROCESSING, Order.STATUS_DELIVERED, Order.STATUS_CANCELLED):
-        return jsonify({'status': 'ok'}), 200
-
-    # Confirm with Get Status API
+    # Compare gross_amount (before sync)
     try:
-        import midtransclient
-        api_client = midtransclient.CoreApi(
-            is_production=os.getenv('MIDTRANS_IS_PRODUCTION', 'false').lower() == 'true',
-            server_key=server_key,
-            client_key=os.getenv('MIDTRANS_CLIENT_KEY', ''),
-        )
-        status_response = api_client.transactions.status(order_id)
-    except Exception as e:
-        current_app.logger.error(f'Midtrans get status error: {e}')
-        return jsonify({'status': 'ok'}), 200
-
-    transaction_status = status_response.get('transaction_status')
-    fraud_status = status_response.get('fraud_status')
-    payment_type = status_response.get('payment_type')
-    transaction_id = status_response.get('transaction_id')
-
-    # Compare gross_amount
-    try:
-        if int(float(gross_amount)) != int(order.total_price):
+        if gross_amount is not None and int(float(gross_amount)) != int(order.total_price):
             log_auth_event(
                 event='midtrans_amount_mismatch',
                 user_id=order.user_id,
@@ -313,37 +299,7 @@ def midtrans_notification():
     except (ValueError, TypeError):
         pass
 
-    # Determine action
-    if status_code == '200' and transaction_status in ('settlement', 'capture') and (fraud_status in (None, 'accept') or fraud_status is None):
-        # Mark paid
-        order.midtrans_transaction_id = transaction_id
-        order.midtrans_payment_type = payment_type
-        order.paid_at = datetime.now(timezone.utc)
-        order.transition_to(Order.STATUS_PAID)
-        db.session.commit()
-        log_auth_event(
-            event='midtrans_payment_received',
-            user_id=order.user_id,
-            status='success',
-            reason=f'Order {order.order_code} paid via {payment_type}'
-        )
-    elif transaction_status in ('expire', 'cancel', 'deny'):
-        # Cancel order and restore stock
-        for item in order.items:
-            product = db.session.get(Product, item.product_id)
-            if product:
-                product.stock += item.quantity
-        try:
-            order.transition_to(Order.STATUS_CANCELLED)
-        except ValueError:
-            pass
-        db.session.commit()
-        log_auth_event(
-            event='midtrans_payment_received',
-            user_id=order.user_id,
-            status='success',
-            reason=f'Order {order.order_code} cancelled ({transaction_status})'
-        )
-    # pending: keep pending_payment
+    from app.payments import sync_midtrans_status
+    sync_midtrans_status(order, source='webhook')
 
     return jsonify({'status': 'ok'}), 200
