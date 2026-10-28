@@ -2,6 +2,41 @@ document.addEventListener("DOMContentLoaded", () => {
   const $ = (s, r = document) => r.querySelector(s),
     $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
+  // Midtrans Snap payment
+  const payBtn = document.getElementById('pay-btn');
+  if (payBtn) {
+    payBtn.addEventListener('click', () => {
+      const token = payBtn.dataset.snapToken;
+      const clientKey = payBtn.dataset.clientKey;
+      const isProduction = payBtn.dataset.isProduction === 'true';
+      if (!token) return;
+      const snapUrl = isProduction
+        ? 'https://app.midtrans.com/snap/snap.js'
+        : 'https://app.sandbox.midtrans.com/snap/snap.js';
+      if (!document.querySelector('script[src*="snap.js"]')) {
+        const script = document.createElement('script');
+        script.src = snapUrl;
+        script.setAttribute('data-client-key', clientKey);
+        document.head.appendChild(script);
+        script.onload = () => {
+          window.snap.pay(token, {
+            onSuccess: function () { window.location.reload(); },
+            onPending: function () { window.location.reload(); },
+            onError: function () { alert('Pembayaran gagal. Silakan coba lagi.'); },
+            onClose: function () { /* user closed popup */ },
+          });
+        };
+      } else {
+        window.snap.pay(token, {
+          onSuccess: function () { window.location.reload(); },
+          onPending: function () { window.location.reload(); },
+          onError: function () { alert('Pembayaran gagal. Silakan coba lagi.'); },
+          onClose: function () { /* user closed popup */ },
+        });
+      }
+    });
+  }
+
   // Resend OTP countdown
   const resendBtn = document.getElementById('resend-btn');
   const countdownEl = document.getElementById('countdown-seconds');

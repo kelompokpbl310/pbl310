@@ -1,6 +1,6 @@
 """Order routes for main blueprint."""
 
-from flask import render_template, url_for, request, redirect, flash, current_app
+from flask import render_template, url_for, request, redirect, flash, current_app, jsonify
 from flask_login import login_required, current_user
 from app.main import bp
 from app import db
@@ -35,7 +35,10 @@ def order_detail(order_code):
             message = Markup(f'Pesanan Anda sudah selesai! Yuk, beri ulasan untuk: {", ".join(links)}.')
             flash(message, 'info')
     
-    return render_template('profil/riwayat_detail.html', order=order)
+    import os
+    client_key = os.getenv('MIDTRANS_CLIENT_KEY', '')
+    is_production = os.getenv('MIDTRANS_IS_PRODUCTION', 'false').lower() == 'true'
+    return render_template('profil/riwayat_detail.html', order=order, client_key=client_key, is_production=is_production)
 
 
 @bp.route('/pesanan/<order_code>/batal', methods=['POST'])
@@ -49,6 +52,20 @@ def order_cancel(order_code):
         return redirect(url_for('main.order_detail', order_code=order_code))
 
     try:
+        # If Midtrans transaction exists, cancel it first
+        if order.midtrans_order_id:
+            try:
+                import midtransclient
+                import os
+                api_client = midtransclient.CoreApi(
+                    is_production=os.getenv('MIDTRANS_IS_PRODUCTION', 'false').lower() == 'true',
+                    server_key=os.getenv('MIDTRANS_SERVER_KEY', ''),
+                    client_key=os.getenv('MIDTRANS_CLIENT_KEY', ''),
+                )
+                api_client.transactions.cancel(order.midtrans_order_id)
+            except Exception as e:
+                current_app.logger.warning(f'Midtrans cancel failed: {e}')
+
         # Restore stock for each item
         for item in order.items:
             product = db.session.get(Product, item.product_id)
@@ -226,3 +243,107 @@ def view_payment_proof(order_code):
     mimetype = mimetype_map.get(ext, 'application/octet-stream')
 
     return send_from_directory(upload_folder, order.payment_proof, mimetype=mimetype)
+
+
+@bp.route('/pembayaran/midtrans/notifikasi', methods=['POST'])
+def midtrans_notification():
+    """Midtrans payment notification webhook."""
+    import hashlib
+    import hmac
+    import os
+    import json
+
+    payload = request.get_json(silent=True) or {}
+    order_id = payload.get('order_id')
+    status_code = payload.get('status_code')
+    gross_amount = payload.get('gross_amount')
+    signature_key = payload.get('signature_key')
+
+    server_key = os.getenv('MIDTRANS_SERVER_KEY', '')
+
+    # Verify signature
+    expected = hashlib.sha512(
+        (order_id + status_code + gross_amount + server_key).encode()
+    ).hexdigest()
+    if not hmac.compare_digest(expected, signature_key or ''):
+        log_auth_event(
+            event='midtrans_signature_invalid',
+            status='failure',
+            reason=f'Invalid signature for order {order_id}'
+        )
+        return jsonify({'status': 'forbidden'}), 403
+
+    # Find order by midtrans_order_id
+    order = Order.query.filter_by(midtrans_order_id=order_id).first()
+    if not order:
+        return jsonify({'status': 'ok'}), 200
+
+    # Idempotent: already paid or cancelled
+    if order.status in (Order.STATUS_PAID, Order.STATUS_PROCESSING, Order.STATUS_DELIVERED, Order.STATUS_CANCELLED):
+        return jsonify({'status': 'ok'}), 200
+
+    # Confirm with Get Status API
+    try:
+        import midtransclient
+        api_client = midtransclient.CoreApi(
+            is_production=os.getenv('MIDTRANS_IS_PRODUCTION', 'false').lower() == 'true',
+            server_key=server_key,
+            client_key=os.getenv('MIDTRANS_CLIENT_KEY', ''),
+        )
+        status_response = api_client.transactions.status(order_id)
+    except Exception as e:
+        current_app.logger.error(f'Midtrans get status error: {e}')
+        return jsonify({'status': 'ok'}), 200
+
+    transaction_status = status_response.get('transaction_status')
+    fraud_status = status_response.get('fraud_status')
+    payment_type = status_response.get('payment_type')
+    transaction_id = status_response.get('transaction_id')
+
+    # Compare gross_amount
+    try:
+        if int(float(gross_amount)) != int(order.total_price):
+            log_auth_event(
+                event='midtrans_amount_mismatch',
+                user_id=order.user_id,
+                status='failure',
+                reason=f'Amount mismatch for order {order.order_code}: {gross_amount} vs {order.total_price}'
+            )
+            return jsonify({'status': 'ok'}), 200
+    except (ValueError, TypeError):
+        pass
+
+    # Determine action
+    if status_code == '200' and transaction_status in ('settlement', 'capture') and (fraud_status in (None, 'accept') or fraud_status is None):
+        # Mark paid
+        order.midtrans_transaction_id = transaction_id
+        order.midtrans_payment_type = payment_type
+        order.paid_at = datetime.now(timezone.utc)
+        order.transition_to(Order.STATUS_PAID)
+        db.session.commit()
+        log_auth_event(
+            event='midtrans_payment_received',
+            user_id=order.user_id,
+            status='success',
+            reason=f'Order {order.order_code} paid via {payment_type}'
+        )
+    elif transaction_status in ('expire', 'cancel', 'deny'):
+        # Cancel order and restore stock
+        for item in order.items:
+            product = db.session.get(Product, item.product_id)
+            if product:
+                product.stock += item.quantity
+        try:
+            order.transition_to(Order.STATUS_CANCELLED)
+        except ValueError:
+            pass
+        db.session.commit()
+        log_auth_event(
+            event='midtrans_payment_received',
+            user_id=order.user_id,
+            status='success',
+            reason=f'Order {order.order_code} cancelled ({transaction_status})'
+        )
+    # pending: keep pending_payment
+
+    return jsonify({'status': 'ok'}), 200

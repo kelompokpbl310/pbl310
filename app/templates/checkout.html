@@ -161,28 +161,11 @@
         </div>
 
         <div class="rounded-2xl border border-maroon/10 bg-cream p-8 shadow-2xl sticky top-24" style="top: calc(6rem + 24px + 1.5rem);">
-          <h2 class="border-b border-maroon/15 pb-3 text-lg font-bold text-maroon mb-4">Metode Pembayaran</h2>
-          <div class="space-y-3">
-            <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-maroon/15 bg-white p-4 transition hover:border-maroon">
-              <input type="radio" name="payment_method" value="transfer" {% if not form_data or form_data.payment_method != 'cod' %}checked{% endif %} class="mt-1 accent-maroon" required form="checkout-form">
-              <span>
-                <span class="block text-sm font-semibold text-maroon">Transfer Bank</span>
-                <span class="text-xs text-stone-500">BCA, Mandiri, BSI, BNI (verifikasi manual via bukti transfer)</span>
-              </span>
-            </label>
-
-            <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-maroon/15 bg-white p-4 transition hover:border-maroon">
-              <input type="radio" name="payment_method" value="cod" {% if form_data and form_data.payment_method == 'cod' %}checked{% endif %} class="mt-1 accent-maroon" form="checkout-form">
-              <span>
-                <span class="block text-sm font-semibold text-maroon">Bayar di Tempat (COD)</span>
-                <span class="text-xs text-stone-500">Bayar langsung saat hidangan tiba di lokasi acara Anda</span>
-              </span>
-            </label>
+          <h2 class="border-b border-maroon/15 pb-3 text-lg font-bold text-maroon mb-4">Pembayaran</h2>
+          <div class="rounded-lg border border-maroon/15 bg-white p-4">
+            <p class="text-sm font-semibold text-maroon mb-2">Bayar dengan Midtrans</p>
+            <p class="text-xs text-stone-500">Metode yang tersedia: Transfer Bank (BCA, Mandiri, BSI, BNI), QRIS, GoPay, ShopeePay, dan lainnya.</p>
           </div>
-
-          {% if errors and errors.payment_method %}
-          <p class="mt-2 text-xs text-red-600">{{ errors.payment_method }}</p>
-          {% endif %}
 
           <p class="mt-4 rounded-xl bg-white/70 p-3 text-xs text-stone-600">
             Transaksi aman & terenkripsi. Jaminan 100% halal dan higienis.

@@ -114,7 +114,13 @@ class Order(db.Model):
     notes = db.Column(db.Text, nullable=True)
 
     # Payment
-    payment_method = db.Column(db.String(20), nullable=False)  # 'transfer' or 'cod'
+    payment_method = db.Column(db.String(20), nullable=False)  # 'midtrans' (new orders)
+    # Midtrans fields
+    midtrans_order_id = db.Column(db.String(50), unique=True, nullable=True)
+    snap_token = db.Column(db.String(255), nullable=True)
+    midtrans_transaction_id = db.Column(db.String(100), nullable=True)
+    midtrans_payment_type = db.Column(db.String(40), nullable=True)
+    paid_at = db.Column(db.DateTime, nullable=True)
 
     # Order identification
     order_code = db.Column(db.String(20), unique=True, nullable=False, index=True)
@@ -159,10 +165,10 @@ class Order(db.Model):
 
     # Valid transitions: current_status -> list of allowed next statuses
     VALID_TRANSITIONS = {
-        STATUS_PENDING_PAYMENT: [STATUS_WAITING_VERIFICATION, STATUS_CANCELLED, STATUS_PROCESSING],  # COD goes to processing
-        STATUS_WAITING_VERIFICATION: [STATUS_PAID, STATUS_PENDING_PAYMENT],  # admin approve/reject
-        STATUS_PAID: [STATUS_PROCESSING],
-        STATUS_PROCESSING: [STATUS_DELIVERED],
+        STATUS_PENDING_PAYMENT: [STATUS_PAID, STATUS_CANCELLED],
+        STATUS_WAITING_VERIFICATION: [STATUS_PAID, STATUS_CANCELLED],
+        STATUS_PAID: [STATUS_PROCESSING, STATUS_CANCELLED],
+        STATUS_PROCESSING: [STATUS_DELIVERED, STATUS_CANCELLED],
         STATUS_DELIVERED: [],
         STATUS_CANCELLED: [],
     }

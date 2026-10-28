@@ -104,6 +104,10 @@ def create_app():
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
 
+    # Exempt Midtrans webhook from CSRF
+    from app.main.orders import midtrans_notification
+    csrf.exempt(midtrans_notification)
+
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
 

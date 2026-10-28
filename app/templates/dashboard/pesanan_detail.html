@@ -53,6 +53,30 @@
         <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Metode Pembayaran</p>
         <p class="mt-1 font-bold text-ink capitalize">{{ order.payment_method }}</p>
       </div>
+      {% if order.payment_method == 'midtrans' %}
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Midtrans Order ID</p>
+        <p class="mt-1 font-bold text-ink text-xs">{{ order.midtrans_order_id or '-' }}</p>
+      </div>
+      {% if order.midtrans_payment_type %}
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Tipe Pembayaran</p>
+        <p class="mt-1 font-bold text-ink capitalize">{{ order.midtrans_payment_type }}</p>
+      </div>
+      {% endif %}
+      {% if order.midtrans_transaction_id %}
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">ID Transaksi</p>
+        <p class="mt-1 font-bold text-ink text-xs">{{ order.midtrans_transaction_id }}</p>
+      </div>
+      {% endif %}
+      {% if order.paid_at %}
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Dibayar</p>
+        <p class="mt-1 font-bold text-ink">{{ order.paid_at.strftime('%d %b %Y %H:%M') }}</p>
+      </div>
+      {% endif %}
+      {% endif %}
       <div>
         <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Tanggal Acara</p>
         <p class="mt-1 font-bold text-ink">{{ order.delivery_date.strftime('%d %b %Y') }}</p>
@@ -167,34 +191,15 @@
   <section class="rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] p-6 shadow-sm transition-shadow hover:shadow-md">
     <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark mb-4">Aksi Admin</h2>
     
-    {% if order.status == order.STATUS_WAITING_VERIFICATION %}
-    <!-- Approve/Reject for waiting_verification -->
+    {% if order.status == order.STATUS_PENDING_PAYMENT and order.payment_method == 'midtrans' %}
+    <!-- Cek Status Midtrans -->
     <div class="flex flex-wrap gap-3 mb-4">
-      <form method="POST" action="{{ url_for('admin.pesanan_approve', order_code=order.order_code) }}" class="inline">
+      <form method="POST" action="{{ url_for('admin.pesanan_check_midtrans', order_code=order.order_code) }}" class="inline">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="rounded-md bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition-colors" onclick="return confirm('Setujui pembayaran untuk pesanan ini?')">
-          <i class="fa-solid fa-check mr-1"></i>Setujui Pembayaran
+        <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition-colors">
+          <i class="fa-solid fa-sync mr-1"></i>Cek Status Midtrans
         </button>
       </form>
-      <button type="button" class="rounded-md bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700 transition-colors" data-reject-modal>
-        <i class="fa-solid fa-xmark mr-1"></i>Tolak Pembayaran
-      </button>
-    </div>
-    
-    <!-- Rejection reason modal form -->
-    <div id="reject-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-maroon-dark/60">
-      <div class="rounded-xl bg-white p-6 w-full max-w-md mx-4">
-        <h3 class="font-opsdisplay text-lg font-bold text-maroon-dark mb-4">Tolak Pembayaran</h3>
-        <p class="text-sm text-ink/70 mb-4">Masukkan alasan penolakan. Pelanggan akan diberitahu dan dapat mengunggah bukti baru.</p>
-        <form method="POST" action="{{ url_for('admin.pesanan_reject', order_code=order.order_code) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <textarea name="rejection_reason" required class="w-full rounded-lg border border-maroon/25 bg-white px-4 py-3 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold" rows="4" placeholder="Contoh: Bukti pembayaran tidak jelas, nominal tidak sesuai, atau format file tidak didukung."></textarea>
-          <div class="mt-4 flex justify-end gap-2">
-            <button type="button" class="rounded-md border border-maroon/25 bg-white px-4 py-2 text-xs font-bold text-maroon hover:bg-cream transition-colors" data-reject-cancel>Batal</button>
-            <button type="submit" class="rounded-md bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700 transition-colors">Tolak</button>
-          </div>
-        </form>
-      </div>
     </div>
     
     {% elif order.status == order.STATUS_PAID %}
