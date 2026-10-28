@@ -875,6 +875,10 @@ def pelanggan_delete(user_id):
         flash('Tidak bisa menghapus pengguna yang memiliki pesanan. Gunakan nonaktifkan sebagai gantinya.', 'error')
         return redirect(url_for('admin.pelanggan'))
 
+    # Delete related OTPs first (avoid FK constraint violation)
+    from app.models import EmailOTP
+    EmailOTP.query.filter_by(user_id=user.id).delete()
+
     username = user.username
     user_id_val = user.id
     db.session.delete(user)

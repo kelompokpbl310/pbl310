@@ -34,7 +34,7 @@ class User(UserMixin, db.Model):
 class EmailOTP(db.Model):
     __tablename__ = 'email_otps'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
     code_hash = db.Column(db.String(255), nullable=False)
     purpose = db.Column(db.String(20), default='register', nullable=False, server_default='register')
     expires_at = db.Column(db.DateTime, nullable=False)
@@ -42,7 +42,7 @@ class EmailOTP(db.Model):
     consumed_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
-    user = db.relationship('User', backref='email_otps')
+    user = db.relationship('User', backref=db.backref('email_otps', cascade='all, delete-orphan', passive_deletes=True))
 
     def __repr__(self):
         return f'<EmailOTP id={self.id} user={self.user_id} purpose={self.purpose}>'
