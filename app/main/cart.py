@@ -27,6 +27,9 @@ def cart_add():
     product_id = request.form.get('product_id', type=int)
     quantity = request.form.get('quantity', 1, type=int)
 
+    if quantity is None or quantity < 1:
+        quantity = 1
+
     if not product_id:
         flash('Produk tidak valid.', 'error')
         return redirect(request.referrer or url_for('main.produk'))

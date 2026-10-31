@@ -302,6 +302,7 @@
               <form method="POST" action="{{ url_for('main.cart_add') }}" class="inline-flex">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="product_id" value="{{ p.id }}">
+                <input type="hidden" name="quantity" value="1">
                 <button type="submit" aria-label="Tambah {{ p.name }} ke keranjang" title="Tambah ke keranjang" class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-maroon text-maroon transition hover:bg-maroon hover:text-white">
                   <i class="fa-solid fa-cart-plus" aria-hidden="true"></i>
                 </button>
