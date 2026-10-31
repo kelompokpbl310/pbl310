@@ -23,7 +23,7 @@
           </span>
           {% endif %}
           <div class="w-2/5 max-w-[45%] shrink-0">
-            <img src="{{ url_for('static', filename=s.image) }}" alt="{{ s.alt_text }}" width="800" height="600" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %} class="aspect-[4/3] w-full rounded-2xl object-cover" />
+            <img src="{{ url_for('static', filename=s.image.replace('static/', '')) }}" alt="{{ s.alt_text }}" width="800" height="600" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %} class="aspect-[4/3] w-full rounded-2xl object-cover" />
           </div>
           <div class="flex min-w-0 flex-1 flex-col">
             <h2 class="pr-14 font-display text-xl font-black text-maroon-dark sm:text-3xl lg:text-4xl">{{ s.headline }}</h2>

@@ -659,6 +659,7 @@ def menu_type_toggle(id):
 @admin_required
 def produk_create():
     categories = Category.query.order_by(Category.name).all()
+    menu_types = MenuType.query.filter_by(is_active=True).order_by(MenuType.display_order, MenuType.name).all()
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         category_id = request.form.get('category_id', type=int)
@@ -689,6 +690,7 @@ def produk_create():
                 # Create product first to get ID for image filename
                 prod = Product(
                     category_id=category_id,
+                    menu_type_id=request.form.get('menu_type_id', type=int) or None,
                     name=name,
                     slug=slug,
                     description=description,
@@ -716,7 +718,7 @@ def produk_create():
                     return redirect(url_for('admin.produk'))
                 else:
                     db.session.rollback()
-    return render_template('dashboard/produk_form.html', categories=categories, product=None)
+    return render_template('dashboard/produk_form.html', categories=categories, menu_types=menu_types, product=None)
 
 
 @bp.route('/produk/<int:id>/edit', methods=['GET', 'POST'])
@@ -725,6 +727,7 @@ def produk_create():
 def produk_edit(id):
     product = Product.query.get_or_404(id)
     categories = Category.query.order_by(Category.name).all()
+    menu_types = MenuType.query.filter_by(is_active=True).order_by(MenuType.display_order, MenuType.name).all()
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         category_id = request.form.get('category_id', type=int)
@@ -753,6 +756,7 @@ def produk_edit(id):
                 flash('Produk dengan nama serupa sudah ada.', 'error')
             else:
                 product.category_id = category_id
+                product.menu_type_id = request.form.get('menu_type_id', type=int) or None
                 product.name = name
                 product.slug = slug
                 product.description = description
@@ -778,7 +782,7 @@ def produk_edit(id):
                 db.session.commit()
                 flash('Produk berhasil diperbarui.', 'success')
                 return redirect(url_for('admin.produk'))
-    return render_template('dashboard/produk_form.html', categories=categories, product=product)
+    return render_template('dashboard/produk_form.html', categories=categories, menu_types=menu_types, product=product)
 
 
 @bp.route('/produk/<int:id>/toggle', methods=['POST'])
@@ -1423,8 +1427,8 @@ def promo_create():
         cta_url = request.form.get('cta_url', '').strip()
         display_order = request.form.get('display_order', type=int) or 0
         is_active = bool(request.form.get('is_active'))
-        starts_at = request.form.get('starts_at')
-        ends_at = request.form.get('ends_at')
+        starts_at = request.form.get('starts_at', '').strip()
+        ends_at = request.form.get('ends_at', '').strip()
         image = request.files.get('image')
 
         errors = []
@@ -1446,11 +1450,16 @@ def promo_create():
                 starts_at = datetime.fromisoformat(starts_at)
             except ValueError:
                 errors.append('Format tanggal mulai tidak valid.')
+        else:
+            starts_at = None
+
         if ends_at:
             try:
                 ends_at = datetime.fromisoformat(ends_at)
             except ValueError:
                 errors.append('Format tanggal berakhir tidak valid.')
+        else:
+            ends_at = None
 
         if errors:
             for e in errors:
@@ -1509,8 +1518,8 @@ def promo_edit(id):
         cta_url = request.form.get('cta_url', '').strip()
         display_order = request.form.get('display_order', type=int) or 0
         is_active = bool(request.form.get('is_active'))
-        starts_at = request.form.get('starts_at')
-        ends_at = request.form.get('ends_at')
+        starts_at = request.form.get('starts_at', '').strip()
+        ends_at = request.form.get('ends_at', '').strip()
         image = request.files.get('image')
 
         errors = []
@@ -1530,11 +1539,16 @@ def promo_edit(id):
                 starts_at = datetime.fromisoformat(starts_at)
             except ValueError:
                 errors.append('Format tanggal mulai tidak valid.')
+        else:
+            starts_at = None
+
         if ends_at:
             try:
                 ends_at = datetime.fromisoformat(ends_at)
             except ValueError:
                 errors.append('Format tanggal berakhir tidak valid.')
+        else:
+            ends_at = None
 
         if errors:
             for e in errors:
