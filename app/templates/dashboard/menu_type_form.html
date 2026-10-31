@@ -1,0 +1,36 @@
+{% extends "dashboard/base.html" %}
+{% set active = 'kategori' %}
+{% block title %}{% if menu_type %}Ubah{% else %}Tambah{% endif %} Tipe Menu | Dashboard Catering Batam{% endblock %}
+{% block eyebrow %}Tipe Menu{% endblock %}
+{% block heading %}{% if menu_type %}Ubah{% else %}Tambah{% endif %} Tipe Menu{% endblock %}
+{% block content %}
+<div class="max-w-3xl">
+  <form method="POST" class="space-y-6 rounded-xl border border-maroon/15 bg-white p-6 shadow-sm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <label for="name" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Nama Tipe Menu</label>
+      <input id="name" name="name" type="text" required value="{{ menu_type.name if menu_type else '' }}" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150">
+    </div>
+    <div>
+      <label for="description" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Deskripsi (opsional)</label>
+      <textarea id="description" name="description" rows="3" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150">{{ menu_type.description if menu_type else '' }}</textarea>
+    </div>
+    <div>
+      <label for="display_order" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Urutan Tampil</label>
+      <input id="display_order" name="display_order" type="number" min="0" value="{{ menu_type.display_order if menu_type else 0 }}" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150">
+    </div>
+    {% if menu_type %}
+    <div>
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" name="is_active" value="1" {% if menu_type.is_active %}checked{% endif %} class="h-5 w-5 accent-maroon">
+        <span class="text-sm font-semibold text-maroon">Aktif</span>
+      </label>
+    </div>
+    {% endif %}
+    <div class="flex justify-end gap-2 pt-2">
+      <a href="{{ url_for('admin.kategori') }}" class="rounded-md border-2 border-maroon py-2 px-4 text-sm font-bold text-maroon hover:bg-maroon hover:text-white transition-colors">Batal</a>
+      <button type="submit" class="rounded-md bg-maroon py-2 px-4 text-sm font-bold text-white hover:bg-maroon-dark transition-colors">{% if menu_type %}Simpan Perubahan{% else %}Tambah Tipe Menu{% endif %}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

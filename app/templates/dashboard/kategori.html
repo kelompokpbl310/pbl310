@@ -6,7 +6,68 @@
 {% block content %}
 <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
   <a href="{{ url_for('admin.kategori_create') }}" class="rounded-lg bg-maroon px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-maroon-dark transition-colors">+ Tambah kategori</a>
+  <a href="{{ url_for('admin.menu_type_create') }}" class="rounded-lg bg-maroon px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-maroon-dark transition-colors">+ Tambah tipe menu</a>
 </div>
+
+<!-- Menu Types Section -->
+<section class="rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] shadow-sm transition-shadow hover:shadow-md mb-6">
+  <div class="flex items-center justify-between p-4 border-b border-maroon/10 bg-cream/50">
+    <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark">Tipe Menu</h2>
+  </div>
+  <div class="min-w-0 flex-1">
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[600px] text-left text-sm tabular-nums">
+        <thead>
+          <tr class="border-b border-maroon/10 text-xs uppercase tracking-wide text-maroon/60">
+            <th class="px-5 py-3">Nama</th>
+            <th class="hidden px-3 py-3 md:table-cell">Slug</th>
+            <th class="hidden px-3 py-3 lg:table-cell">Deskripsi</th>
+            <th class="px-3 py-3">Produk</th>
+            <th class="px-3 py-3">Status</th>
+            <th class="px-5 py-3 text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-maroon/10">
+          {% for mt in menu_types %}
+          <tr class="hover:bg-cream/50 transition-colors">
+            <td class="px-5 py-3 font-semibold text-ink">{{ mt.name }}</td>
+            <td class="hidden px-3 py-3 text-ink/60 font-mono text-xs md:table-cell">{{ mt.slug }}</td>
+            <td class="hidden px-3 py-3 text-ink/60 lg:table-cell max-w-xs truncate">{{ mt.description or '-' }}</td>
+            <td class="whitespace-nowrap px-3 py-3 text-center text-ink/60">{{ mt.products|length }}</td>
+            <td class="whitespace-nowrap px-3 py-3 text-center">
+              <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold {% if mt.is_active %}bg-emerald-100 text-emerald-700{% else %}bg-red-100 text-red-700{% endif %}">
+                {{ 'Aktif' if mt.is_active else 'Nonaktif' }}
+              </span>
+            </td>
+            <td class="px-5 py-3"><div class="flex justify-end gap-2">
+              <a href="{{ url_for('admin.menu_type_edit', id=mt.id) }}" class="rounded-md border border-maroon bg-transparent px-3 py-1.5 text-xs font-bold text-maroon hover:bg-maroon-dark hover:text-white transition-colors">Ubah</a>
+              <form method="POST" action="{{ url_for('admin.menu_type_toggle', id=mt.id) }}" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="rounded-md border-2 border-maroon py-1.5 px-3 text-xs font-bold text-maroon hover:bg-maroon hover:text-white transition-colors" title="{{ 'Nonaktifkan' if mt.is_active else 'Aktifkan' }}">
+                  {% if mt.is_active %}<i class="fa-solid fa-ban"></i>{% else %}<i class="fa-solid fa-circle-check"></i>{% endif %}
+                </button>
+              </form>
+              <form method="POST" action="{{ url_for('admin.menu_type_delete', id=mt.id) }}" style="display:inline;" onsubmit="return confirm('Hapus tipe menu ini?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="rounded-md bg-red-600 py-1.5 px-3 text-xs font-bold text-white hover:bg-red-700 transition-colors">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </form>
+            </div></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="px-6 py-8 text-center text-ink/50">Belum ada tipe menu. Tambahkan yang pertama.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Categories Section -->
+<h2 class="font-opsdisplay text-lg font-bold text-maroon-dark mb-3">Kategori</h2>
 
 <section class="rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] shadow-sm transition-shadow hover:shadow-md">
   <div class="flex items-center justify-between p-4 border-b border-maroon/10 bg-cream/50">

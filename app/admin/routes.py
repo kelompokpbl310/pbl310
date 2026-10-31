@@ -4,7 +4,7 @@ from functools import wraps
 from flask import render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from app import db
-from app.models import Category, Product, PromoBanner, Order, OrderItem, User
+from app.models import Category, Product, PromoBanner, Order, OrderItem, User, MenuType
 from app.admin import bp
 from app.security_logging import log_auth_event
 from werkzeug.utils import secure_filename
@@ -508,7 +508,8 @@ def produk():
 @admin_required
 def kategori():
     categories = Category.query.order_by(Category.name).all()
-    return render_template('dashboard/kategori.html', categories=categories)
+    menu_types = MenuType.query.order_by(MenuType.display_order, MenuType.name).all()
+    return render_template('dashboard/kategori.html', categories=categories, menu_types=menu_types)
 
 
 @bp.route('/kategori/create', methods=['GET', 'POST'])
@@ -570,6 +571,85 @@ def kategori_delete(id):
         db.session.delete(category)
         db.session.commit()
         flash('Kategori berhasil dihapus.', 'success')
+    return redirect(url_for('admin.kategori'))
+
+
+# --- MenuType CRUD ---
+@bp.route('/menu-type/create', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def menu_type_create():
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        description = request.form.get('description', '').strip()
+        display_order = request.form.get('display_order', type=int) or 0
+        if not name:
+            flash('Nama tipe menu wajib diisi.', 'error')
+        else:
+            slug = name.lower().replace(' ', '-')
+            existing = MenuType.query.filter_by(slug=slug).first()
+            if existing:
+                flash('Tipe menu dengan nama serupa sudah ada.', 'error')
+            else:
+                mt = MenuType(name=name, slug=slug, description=description, display_order=display_order, is_active=True)
+                db.session.add(mt)
+                db.session.commit()
+                flash('Tipe menu berhasil ditambahkan.', 'success')
+                return redirect(url_for('admin.kategori'))
+    return render_template('dashboard/menu_type_form.html', menu_type=None)
+
+
+@bp.route('/menu-type/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def menu_type_edit(id):
+    mt = MenuType.query.get_or_404(id)
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        description = request.form.get('description', '').strip()
+        display_order = request.form.get('display_order', type=int) or 0
+        is_active = bool(request.form.get('is_active'))
+        if not name:
+            flash('Nama tipe menu wajib diisi.', 'error')
+        else:
+            slug = name.lower().replace(' ', '-')
+            existing = MenuType.query.filter(MenuType.slug == slug, MenuType.id != id).first()
+            if existing:
+                flash('Tipe menu dengan nama serupa sudah ada.', 'error')
+            else:
+                mt.name = name
+                mt.slug = slug
+                mt.description = description
+                mt.display_order = display_order
+                mt.is_active = is_active
+                db.session.commit()
+                flash('Tipe menu berhasil diperbarui.', 'success')
+                return redirect(url_for('admin.kategori'))
+    return render_template('dashboard/menu_type_form.html', menu_type=mt)
+
+
+@bp.route('/menu-type/<int:id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def menu_type_delete(id):
+    mt = MenuType.query.get_or_404(id)
+    if mt.products:
+        flash('Tipe menu tidak bisa dihapus karena masih memiliki produk.', 'error')
+    else:
+        db.session.delete(mt)
+        db.session.commit()
+        flash('Tipe menu berhasil dihapus.', 'success')
+    return redirect(url_for('admin.kategori'))
+
+
+@bp.route('/menu-type/<int:id>/toggle', methods=['POST'])
+@login_required
+@admin_required
+def menu_type_toggle(id):
+    mt = MenuType.query.get_or_404(id)
+    mt.is_active = not mt.is_active
+    db.session.commit()
+    flash(f'Tipe menu {"diaktifkan" if mt.is_active else "dinonaktifkan"}.', 'success')
     return redirect(url_for('admin.kategori'))
 
 
