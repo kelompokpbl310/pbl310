@@ -614,7 +614,8 @@ def produk_create():
                     description=description,
                     price=price,
                     stock=stock,
-                    is_active=True
+                    is_active=True,
+                    is_featured=bool(request.form.get('is_featured'))
                 )
                 db.session.add(prod)
                 db.session.flush()  # Get ID without committing
@@ -677,6 +678,7 @@ def produk_edit(id):
                 product.description = description
                 product.price = price
                 product.stock = stock
+                product.is_featured = bool(request.form.get('is_featured'))
 
                 # Handle image upload (only if new file provided)
                 if image and image.filename:

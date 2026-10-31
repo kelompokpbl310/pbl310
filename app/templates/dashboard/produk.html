@@ -37,6 +37,12 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="flex-1 rounded-md border-2 border-maroon py-1.5 text-xs font-bold text-maroon hover:bg-maroon hover:text-white transition-colors">{{ 'Aktifkan' if not p.is_active else 'Nonaktifkan' }}</button>
         </form>
+        <form method="POST" action="{{ url_for('admin.produk_delete', id=p.id) }}" style="display:inline;" onsubmit="return confirm('Hapus produk ini?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="rounded-md bg-red-600 py-2 px-3 text-xs font-bold text-white hover:bg-red-700 transition-colors">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </form>
       </div>
     </div>
   </article>

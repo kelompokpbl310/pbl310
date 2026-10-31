@@ -50,6 +50,13 @@
       <p class="mt-1 text-xs text-ink/50">PNG/JPG/WebP, max 2MB. Akan dikonversi ke WebP 800px.</p>
     </div>
     
+    <div>
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" name="is_featured" value="1" {% if product and product.is_featured %}checked{% endif %} class="h-5 w-5 accent-maroon">
+        <span class="text-sm font-semibold text-maroon">Produk Pilihan (tampil di halaman utama)</span>
+      </label>
+    </div>
+
     <div class="flex justify-end gap-2 pt-2">
       <a href="{{ url_for('admin.produk') }}" class="rounded-md border-2 border-maroon py-2 px-4 text-sm font-bold text-maroon hover:bg-maroon hover:text-white transition-colors">Batal</a>
       <button type="submit" class="rounded-md bg-maroon py-2 px-4 text-sm font-bold text-white hover:bg-maroon-dark transition-colors">{% if product %}Simpan Perubahan{% else %}Tambah Produk{% endif %}</button>
