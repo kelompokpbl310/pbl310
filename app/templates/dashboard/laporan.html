@@ -51,7 +51,7 @@
   <!-- Omzet per kategori (payment method) -->
   <div class="rounded-xl border border-maroon/15 bg-white p-6 xl:col-span-7 transition-shadow hover:shadow-md">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark">Omzet per Metode Pembayaran</h2>
+      <h2 class="font-opsdisplay text-lg font-bold text-maroon-dark">Omzet</h2>
       <span class="rounded-lg bg-cream px-3 py-1 text-xs font-bold text-maroon-dark">{{ format_id_date(start_date_obj) }} s.d. {{ format_id_date(end_date_obj) }}</span>
     </div>
     <div class="mt-5 space-y-4 text-sm">
@@ -141,9 +141,9 @@
           </td>
           <td class="px-3 py-3">{{ order.created_at.strftime('%d %b %Y %H:%M') }}</td>
           <td class="px-3 py-3">
-            <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold {% if order.payment_method == 'transfer' %}bg-blue-100 text-blue-700{% else %}bg-amber-100 text-amber-700{% endif %}">
-              {% if order.payment_method == 'transfer' %}<i class="fa-solid fa-university"></i>{% else %}<i class="fa-solid fa-money-bill-wave"></i>{% endif %}
-              {{ order.payment_method|capitalize }}
+            <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold {% if order.midtrans_payment_type %}bg-purple-100 text-purple-700{% elif order.payment_method == 'transfer' %}bg-blue-100 text-blue-700{% else %}bg-amber-100 text-amber-700{% endif %}">
+              {% if order.midtrans_payment_type %}<i class="fa-solid fa-credit-card"></i>{% elif order.payment_method == 'transfer' %}<i class="fa-solid fa-university"></i>{% else %}<i class="fa-solid fa-money-bill-wave"></i>{% endif %}
+              {{ (order.midtrans_payment_type or order.payment_method)|capitalize }}
             </span>
           </td>
           <td class="px-3 py-3">

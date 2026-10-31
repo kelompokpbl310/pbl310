@@ -142,6 +142,13 @@ def create_app():
     # Template context processors
     @app.context_processor
     def utility_processor():
+        # Orders needing processing (status = paid) for sidebar badge
+        try:
+            from app.models import Order
+            pending_count = Order.query.filter_by(status=Order.STATUS_PAID).count()
+        except Exception:
+            pending_count = 0
+
         ID_MONTHS = [
             'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
             'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
@@ -161,7 +168,7 @@ def create_app():
                 return f'{d.day} {ID_MONTHS[d.month - 1]} {d.year}'
             return str(d)
 
-        return dict(rp=rp, format_id_date=format_id_date)
+        return dict(rp=rp, format_id_date=format_id_date, pending_count=pending_count)
 
     # CLI command: flask midtrans-sync
     @app.cli.command('midtrans-sync')

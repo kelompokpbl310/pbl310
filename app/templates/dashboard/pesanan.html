@@ -109,9 +109,9 @@
             <td class="hidden px-3 py-3 text-ink/60 md:table-cell">{{ order.created_at.strftime('%d %b %Y') }}</td>
             <td class="hidden px-3 py-3 lg:table-cell">{{ order.delivery_date.strftime('%d %b %Y') }}</td>
             <td class="px-3 py-3">
-              <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold {% if order.payment_method == 'transfer' %}bg-blue-100 text-blue-700{% else %}bg-amber-100 text-amber-700{% endif %}">
-                {% if order.payment_method == 'transfer' %}<i class="fa-solid fa-university"></i>{% else %}<i class="fa-solid fa-money-bill-wave"></i>{% endif %}
-                {{ order.payment_method|capitalize }}
+              <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold {% if order.midtrans_payment_type %}bg-purple-100 text-purple-700{% elif order.payment_method == 'transfer' %}bg-blue-100 text-blue-700{% else %}bg-amber-100 text-amber-700{% endif %}">
+                {% if order.midtrans_payment_type %}<i class="fa-solid fa-credit-card"></i>{% elif order.payment_method == 'transfer' %}<i class="fa-solid fa-university"></i>{% else %}<i class="fa-solid fa-money-bill-wave"></i>{% endif %}
+                {{ (order.midtrans_payment_type or order.payment_method)|capitalize }}
               </span>
             </td>
             <td class="whitespace-nowrap px-3 py-3 font-bold">Rp {{ "{:,.0f}".format(order.total_price).replace(',', '.') }}</td>

@@ -51,7 +51,7 @@
     <div class="mt-6 grid gap-4 sm:grid-cols-2">
       <div>
         <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Metode Pembayaran</p>
-        <p class="mt-1 font-bold text-ink capitalize">{{ order.payment_method }}</p>
+        <p class="mt-1 font-bold text-ink capitalize">{{ (order.midtrans_payment_type or order.payment_method) }}</p>
       </div>
       {% if order.payment_method == 'midtrans' %}
       <div>

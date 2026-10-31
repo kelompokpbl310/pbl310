@@ -147,7 +147,11 @@
                     <div class="grid grid-cols-3 gap-2">
                       <dt class="font-semibold">Metode:</dt>
                       <dd class="col-span-2">
-                        {% if order.payment_method == 'midtrans' %}
+                        {% if order.midtrans_payment_type %}
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-700">
+                          <i class="fa-solid fa-credit-card"></i> {{ order.midtrans_payment_type|capitalize }}
+                        </span>
+                        {% elif order.payment_method == 'midtrans' %}
                         <span class="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-700">
                           <i class="fa-solid fa-credit-card"></i> Midtrans
                         </span>

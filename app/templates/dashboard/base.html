@@ -72,10 +72,10 @@
             {% if active == key %}aria-current="page"{% endif %}
           >
             <span class="w-5 text-center transition-transform duration-150" aria-hidden="true"><i class="fa-solid {{ icon }}"></i></span>
-            {{ label }} {% if key == 'pesanan' %}
+            {{ label }} {% if key == 'pesanan' and pending_count > 0 %}
             <span
               class="ml-auto rounded-full bg-gold px-2 py-0.5 text-[11px] font-extrabold text-maroon-dark"
-              >6</span
+              >{{ pending_count }}</span
             >
             {% endif %}
           </a>
