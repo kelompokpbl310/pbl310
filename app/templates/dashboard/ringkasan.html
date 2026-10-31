@@ -98,25 +98,18 @@
     </div>
   </div>
 
-  <!-- Menu terlaris - placeholder, can be enhanced with real OrderItem data -->
+  <!-- Menu terlaris - data dari database -->
   <div class="rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] p-6 shadow-sm xl:col-span-5 transition-shadow hover:shadow-md">
     <h2 class="font-opsdisplay font-bold text-maroon-dark">Menu terlaris</h2>
     <ul class="mt-4 space-y-3 text-sm">
+      {% for name, qty in (best_products or []) %}
       <li class="flex items-center gap-3 p-2 rounded-lg transition-colors hover:bg-cream/50">
-        <img src="{{ url_for('static', filename='img/assets4.png') }}" alt="" class="h-11 w-11 rounded-md object-cover" />
-        <div class="min-w-0 flex-1"><p class="truncate font-bold text-maroon-dark">Sate Kambing Empuk</p><p class="text-xs tabular-nums text-ink/60">Terlaris minggu ini</p></div>
-        <span class="rounded-full bg-gold px-2.5 py-1 text-xs font-extrabold text-maroon-dark">Top 1</span>
+        <div class="min-w-0 flex-1"><p class="truncate font-bold text-maroon-dark">{{ name }}</p><p class="text-xs tabular-nums text-ink/60">{{ qty }} terjual minggu ini</p></div>
+        <span class="rounded-full bg-gold px-2.5 py-1 text-xs font-extrabold text-maroon-dark">Top {{ loop.index }}</span>
       </li>
-      <li class="flex items-center gap-3 p-2 rounded-lg transition-colors hover:bg-cream/50">
-        <img src="{{ url_for('static', filename='img/assets2.png') }}" alt="" class="h-11 w-11 rounded-md object-cover" />
-        <div class="min-w-0 flex-1"><p class="truncate font-bold text-maroon-dark">Nasi Kebuli Rempah</p><p class="text-xs tabular-nums text-ink/60">Favorit pelanggan</p></div>
-        <span class="rounded-full bg-gold px-2.5 py-1 text-xs font-extrabold text-maroon-dark">Top 2</span>
-      </li>
-      <li class="flex items-center gap-3 p-2 rounded-lg transition-colors hover:bg-cream/50">
-        <img src="{{ url_for('static', filename='img/assets1.png') }}" alt="" class="h-11 w-11 rounded-md object-cover" />
-        <div class="min-w-0 flex-1"><p class="truncate font-bold text-maroon-dark">Kambing Guling Utuh</p><p class="text-xs tabular-nums text-ink/60">Paket aqiqah premium</p></div>
-        <span class="rounded-full bg-gold px-2.5 py-1 text-xs font-extrabold text-maroon-dark">Top 3</span>
-      </li>
+      {% else %}
+      <li class="text-sm text-ink/60 text-center py-4">Belum ada data penjualan.</li>
+      {% endfor %}
     </ul>
     <a href="{{ url_for('admin.laporan') }}" class="mt-4 block rounded-md border-2 border-maroon py-2 text-center text-xs font-bold text-maroon hover:bg-maroon hover:text-white transition-colors">Lihat laporan lengkap</a>
   </div>

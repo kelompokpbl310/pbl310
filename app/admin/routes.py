@@ -167,6 +167,16 @@ def dashboard():
     # Recent orders (last 5)
     recent_orders = Order.query.order_by(Order.created_at.desc()).limit(5).all()
 
+    # Best-selling products this week
+    from sqlalchemy import func
+    best_products = db.session.query(
+        OrderItem.product_name,
+        func.sum(OrderItem.quantity).label('total_qty'),
+    ).join(Order).filter(
+        Order.status.in_([Order.STATUS_PAID, Order.STATUS_PROCESSING, Order.STATUS_DELIVERED]),
+        func.date(Order.created_at) >= week_ago,
+    ).group_by(OrderItem.product_name).order_by(func.sum(OrderItem.quantity).desc()).limit(3).all()
+
     # Week-over-week change percentage
     if prev_week_revenue > 0:
         wow_change = ((week_revenue - prev_week_revenue) / prev_week_revenue) * 100
@@ -183,6 +193,7 @@ def dashboard():
         total_customers=total_customers,
         new_customers_month=new_customers_month,
         recent_orders=recent_orders,
+        best_products=best_products,
         today_date=today_str,
     )
 
@@ -1260,18 +1271,49 @@ def laporan():
     )
 
 
+@bp.route('/ulasan/<int:review_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def ulasan_delete(review_id):
+    from app.models import Review
+    review = Review.query.get_or_404(review_id)
+    db.session.delete(review)
+    db.session.commit()
+    flash('Ulasan dihapus.', 'success')
+    return redirect(url_for('admin.ulasan'))
+
+
 @bp.route('/ulasan')
 @login_required
 @admin_required
 def ulasan():
-    return render_template('dashboard/ulasan.html')
+    from app.models import Review
+    reviews = Review.query.order_by(Review.created_at.desc()).all()
+    # Calculate stats
+    total_reviews = len(reviews)
+    avg_rating = sum(r.rating for r in reviews) / total_reviews if total_reviews > 0 else 0
+    five_star = sum(1 for r in reviews if r.rating == 5)
+    four_star = sum(1 for r in reviews if r.rating == 4)
+    return render_template('dashboard/ulasan.html',
+        reviews=reviews,
+        total_reviews=total_reviews,
+        avg_rating=round(avg_rating, 1),
+        five_star=five_star,
+        four_star=four_star,
+    )
 
 
 @bp.route('/pengaturan')
 @login_required
 @admin_required
 def pengaturan():
-    return render_template('dashboard/pengaturan.html')
+    from app.models import Setting
+    # Get or create settings
+    settings = {}
+    for key in ['store_name', 'whatsapp', 'address', 'hours', 'free_delivery', 'qris_active', 'cod_active']:
+        s = Setting.query.get(key)
+        settings[key] = s.value if s else ''
+    return render_template('dashboard/pengaturan.html', settings=settings)
 
 
 # --- Promo Banner CRUD ---

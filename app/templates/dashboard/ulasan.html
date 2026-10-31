@@ -1,48 +1,51 @@
 {% extends "dashboard/base.html" %}
 {% set active = 'ulasan' %}
 {% block title %}Ulasan | Dashboard Catering Batam{% endblock %}
-{% block eyebrow %}Ulasan • 4,9 dari 187{% endblock %}
+{% block eyebrow %}Ulasan • {{ avg_rating }} dari {{ total_reviews }}{% endblock %}
 {% block heading %}Ulasan{% endblock %}
 {% block content %}
 <!-- Ledger strip -->
 <section class="grid grid-cols-1 divide-y divide-maroon/15 rounded-xl border border-maroon/15 bg-paper bg-[#FFFDF4] sm:grid-cols-3 sm:divide-x sm:divide-y-0 transition-shadow hover:shadow-md" aria-label="Ringkasan ulasan">
   <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
     <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Rating toko</p>
-    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">4,9 <span class="text-xl text-gold" aria-hidden="true">★★★★★</span></p>
-    <p class="mt-1 text-xs text-ink/60">Dari 187 ulasan terverifikasi</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">{{ avg_rating }} <span class="text-xl text-gold" aria-hidden="true">{% for i in range(avg_rating|int) %}★{% endfor %}</span></p>
+    <p class="mt-1 text-xs text-ink/60">Dari {{ total_reviews }} ulasan</p>
   </div>
   <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
     <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Ulasan bulan ini</p>
-    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">23</p>
-    <p class="mt-1 text-xs text-ink/60">19 bintang 5 • 4 bintang 4</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">{{ total_reviews }}</p>
+    <p class="mt-1 text-xs text-ink/60">{{ five_star }} bintang 5 • {{ four_star }} bintang 4</p>
   </div>
   <div class="px-5 py-4 hover:bg-cream/50 transition-colors">
     <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">Perlu dibalas</p>
-    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">3</p>
+    <p class="mt-1 font-opsdisplay text-3xl font-bold tabular-nums text-maroon-dark">0</p>
     <p class="mt-1 text-xs font-bold text-maroon">Balas &lt; 24 jam agar dipercaya</p>
   </div>
 </section>
 
 <section class="mt-4 grid gap-4 lg:grid-cols-2">
-  {% for nama, menu, isi in [
-    ('Ibu Amanda & Keluarga','Prasmanan Aqiqah','Daging sangat lembut, tidak prengus. Bumbu kebuli gurih, tamu sangat terkesan.'),
-    ('H. Mahmud','Kambing Guling Utuh','Matang merata, datang masih hangat ke Batu Aji. Dokumentasi rapi.'),
-    ('Dewi Lestari','Bento 60 box','Kemasan rapi tahan panas, tepat waktu untuk syukuran sekolah.'),
-    ('Andi Pratama','Sate + Gulai','Sate empuk, gulai kental. Akan pesan lagi untuk selamatan.'),
-  ] %}
+  {% for review in reviews %}
   <article class="rounded-xl border border-maroon/15 bg-white p-6 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-maroon/30">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">{{ nama }}</p>
+      <p class="text-[11px] font-bold uppercase tracking-widest text-maroon/60">{{ review.user.fullname if review.user else 'Anonim' }}</p>
       <span class="rounded-lg bg-cream px-2.5 py-1 text-[11px] font-bold text-maroon-dark">Terverifikasi</span>
     </div>
-    <p class="mt-2 text-sm text-gold" aria-label="5 dari 5 bintang">★★★★★</p>
-    <p class="mt-1 font-opsdisplay text-lg font-bold text-maroon-dark">{{ menu }}</p>
-    <p class="mt-1 border-l-2 border-gold pl-3 text-sm leading-relaxed text-ink/70">“{{ isi }}”</p>
+    <p class="mt-2 text-sm text-gold" aria-label="{{ review.rating }} dari 5 bintang">{% for i in range(review.rating) %}★{% endfor %}{% for i in range(5 - review.rating) %}☆{% endfor %}</p>
+    <p class="mt-1 font-opsdisplay text-lg font-bold text-maroon-dark">{{ review.product.name if review.product else 'Produk' }}</p>
+    <p class="mt-1 border-l-2 border-gold pl-3 text-sm leading-relaxed text-ink/70">"{{ review.comment or '(Tanpa komentar)' }}"</p>
     <div class="mt-4 flex flex-wrap gap-2 border-t border-maroon/15 pt-4">
-      <button type="button" class="rounded-lg bg-maroon px-4 py-2 text-xs font-bold text-white hover:bg-maroon-dark shadow-sm transition-all duration-150">Tampilkan</button>
-      <button type="button" class="rounded-lg border border-maroon/25 bg-white px-4 py-2 text-xs font-bold text-maroon hover:bg-cream transition-colors">Balas</button>
+      <form method="POST" action="{{ url_for('admin.ulasan_delete', review_id=review.id) }}" class="inline" onsubmit="return confirm('Hapus ulasan ini?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700 shadow-sm transition-all duration-150">
+          <i class="fa-solid fa-trash-can mr-1"></i>Hapus
+        </button>
+      </form>
     </div>
   </article>
+  {% else %}
+  <div class="col-span-2 text-center py-8 text-ink/60">
+    <p>Belum ada ulasan.</p>
+  </div>
   {% endfor %}
 </section>
 {% endblock %}
