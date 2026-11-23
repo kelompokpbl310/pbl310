@@ -148,30 +148,107 @@ def profil_keamanan():
 @bp.route('/profil/password', methods=['POST'])
 @login_required
 def profil_password():
-    current_password = request.form.get('current_password') or ''
-    new_password = request.form.get('new_password') or ''
-    confirm_password = request.form.get('confirm_password') or ''
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+
+    if current_password is None:
+        current_password = ''
+    if new_password is None:
+        new_password = ''
+    if confirm_password is None:
+        confirm_password = ''
 
     if not current_password or not new_password or not confirm_password:
+        log_auth_event(
+            event='password_change_failed',
+            user_id=current_user.id,
+            username=current_user.username,
+            role=current_user.role,
+            status='failure',
+            reason='missing_fields'
+        )
         flash('Semua field wajib diisi.', 'error')
         return redirect(url_for('main.profil_keamanan'))
 
     if not current_user.check_password(current_password):
+        log_auth_event(
+            event='password_change_failed',
+            user_id=current_user.id,
+            username=current_user.username,
+            role=current_user.role,
+            status='failure',
+            reason='incorrect_current_password'
+        )
         flash('Password saat ini salah.', 'error')
         return redirect(url_for('main.profil_keamanan'))
 
+    if new_password != confirm_password:
+        log_auth_event(
+            event='password_change_failed',
+            user_id=current_user.id,
+            username=current_user.username,
+            role=current_user.role,
+            status='failure',
+            reason='mismatch'
+        )
+        flash('Konfirmasi password tidak cocok.', 'error')
+        return redirect(url_for('main.profil_keamanan'))
+
     if len(new_password) < 8:
+        log_auth_event(
+            event='password_change_failed',
+            user_id=current_user.id,
+            username=current_user.username,
+            role=current_user.role,
+            status='failure',
+            reason='weak_password'
+        )
         flash('Password baru minimal 8 karakter.', 'error')
         return redirect(url_for('main.profil_keamanan'))
 
-    if new_password != confirm_password:
-        flash('Konfirmasi password tidak cocok.', 'error')
+    has_upper = any(c.isupper() for c in new_password)
+    has_lower = any(c.islower() for c in new_password)
+    has_digit = any(c.isdigit() for c in new_password)
+    if not (has_upper and has_lower and has_digit):
+        log_auth_event(
+            event='password_change_failed',
+            user_id=current_user.id,
+            username=current_user.username,
+            role=current_user.role,
+            status='failure',
+            reason='weak_password'
+        )
+        flash('Password baru harus mengandung huruf besar, huruf kecil, dan angka.', 'error')
+        return redirect(url_for('main.profil_keamanan'))
+
+    if new_password == current_password:
+        log_auth_event(
+            event='password_change_failed',
+            user_id=current_user.id,
+            username=current_user.username,
+            role=current_user.role,
+            status='failure',
+            reason='password_reuse'
+        )
+        flash('Password baru tidak boleh sama dengan password saat ini.', 'error')
         return redirect(url_for('main.profil_keamanan'))
 
     current_user.set_password(new_password)
     db.session.commit()
-    flash('Password berhasil diubah.', 'success')
-    return redirect(url_for('main.profil_keamanan'))
+
+    log_auth_event(
+        event='password_changed',
+        user_id=current_user.id,
+        username=current_user.username,
+        role=current_user.role,
+        status='success'
+    )
+
+    from flask_login import logout_user
+    logout_user()
+    flash('Password berhasil diubah. Silakan login dengan password baru.', 'success')
+    return redirect(url_for('auth.login'))
 
 
 @bp.route('/profil/riwayat')

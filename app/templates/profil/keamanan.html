@@ -19,16 +19,27 @@
           <section class="space-y-4" aria-labelledby="keamanan-label">
             <h3 id="keamanan-label" class="font-opsdisplay text-lg font-bold text-maroon-dark">Keamanan</h3>
             <p class="text-sm text-ink/60">Ubah password Anda. Gunakan password yang kuat dan unik.</p>
+            <p class="text-xs text-ink/50">Syarat: minimal 8 karakter, mengandung huruf besar, huruf kecil, dan angka.</p>
 
             <form method="POST" action="{{ url_for('main.profil_password') }}" class="space-y-4 rounded-xl border border-maroon/15 bg-white p-6 transition-shadow hover:shadow-md">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <div>
                 <label for="current_password" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Password Saat Ini</label>
-                <input id="current_password" name="current_password" type="password" required autocomplete="current-password" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+                <div class="relative">
+                  <input id="current_password" name="current_password" type="password" required autocomplete="current-password" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 pr-12 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+                  <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-maroon" data-target="current_password" aria-label="Tampilkan password" aria-pressed="false">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                  </button>
+                </div>
               </div>
               <div>
                 <label for="new_password" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Password Baru</label>
-                <input id="new_password" name="new_password" type="password" required autocomplete="new-password" minlength="8" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+                <div class="relative">
+                  <input id="new_password" name="new_password" type="password" required autocomplete="new-password" minlength="8" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 pr-12 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+                  <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-maroon" data-target="new_password" aria-label="Tampilkan password" aria-pressed="false">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                  </button>
+                </div>
                 <div class="mt-1 h-1 w-full bg-stone-200 rounded-full overflow-hidden" id="password-strength-bar">
                   <div class="h-full bg-transparent transition-all duration-300" style="width: 0%" id="password-strength-fill"></div>
                 </div>
@@ -36,7 +47,12 @@
               </div>
               <div>
                 <label for="confirm_password" class="block text-[11px] font-bold uppercase tracking-widest text-maroon">Konfirmasi Password Baru</label>
-                <input id="confirm_password" name="confirm_password" type="password" required autocomplete="new-password" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+                <div class="relative">
+                  <input id="confirm_password" name="confirm_password" type="password" required autocomplete="new-password" minlength="8" class="mt-1 w-full rounded-lg border border-maroon/20 bg-paper px-4 py-2.5 pr-12 text-sm text-ink outline-none focus:border-maroon focus:ring-2 focus:ring-gold/30 transition-all duration-150" />
+                  <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-maroon" data-target="confirm_password" aria-label="Tampilkan password" aria-pressed="false">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                  </button>
+                </div>
               </div>
               <button type="submit" class="w-full rounded-lg bg-maroon py-3 text-sm font-bold text-white hover:bg-maroon-dark shadow-sm transition-all duration-150">Ubah Password</button>
             </form>
