@@ -37,4 +37,46 @@ document.addEventListener("DOMContentLoaded", () => {
       empty?.classList.toggle("hidden", n > 0);
     }),
   );
+
+  // Product view toggle (grid/list)
+  const gridBtn = document.getElementById('view-grid');
+  const listBtn = document.getElementById('view-list');
+  const gridView = document.getElementById('grid-view');
+  const listView = document.getElementById('list-view');
+
+  if (gridBtn && listBtn && gridView && listView) {
+    const setView = (view) => {
+      const isGrid = view === 'grid';
+      gridView.classList.toggle('hidden', !isGrid);
+      listView.classList.toggle('hidden', isGrid);
+      gridBtn.classList.toggle('bg-maroon', isGrid);
+      gridBtn.classList.toggle('text-white', isGrid);
+      gridBtn.classList.toggle('bg-white', !isGrid);
+      gridBtn.classList.toggle('text-maroon', !isGrid);
+      listBtn.classList.toggle('bg-maroon', !isGrid);
+      listBtn.classList.toggle('text-white', !isGrid);
+      listBtn.classList.toggle('bg-white', isGrid);
+      listBtn.classList.toggle('text-maroon', isGrid);
+      gridBtn.setAttribute('aria-pressed', isGrid ? 'true' : 'false');
+      listBtn.setAttribute('aria-pressed', isGrid ? 'false' : 'true');
+    };
+
+    let savedView = 'grid';
+    try {
+      savedView = localStorage.getItem('admin_product_view') || 'grid';
+    } catch (e) {
+      savedView = 'grid';
+    }
+    if (savedView !== 'grid' && savedView !== 'list') savedView = 'grid';
+    setView(savedView);
+
+    gridBtn.addEventListener('click', () => {
+      setView('grid');
+      try { localStorage.setItem('admin_product_view', 'grid'); } catch (e) {}
+    });
+    listBtn.addEventListener('click', () => {
+      setView('list');
+      try { localStorage.setItem('admin_product_view', 'list'); } catch (e) {}
+    });
+  }
 });

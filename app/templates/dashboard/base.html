@@ -103,11 +103,17 @@
             >
             <div class="text-xs">
               <p class="font-bold text-white">Admin Dapur</p>
-              <a
-                href="{{ url_for('main.index') }}"
-                class="text-cream/70 hover:text-white transition-colors"
-                >← Kembali ke toko</a
-              >
+                <form method="POST" action="{{ url_for('auth.logout') }}" class="mt-1">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <button
+    type="submit"
+    class="inline-flex items-center gap-1 text-cream/70 hover:text-white transition-colors"
+  >
+    <i class="fa-solid fa-right-from-bracket text-[10px]" aria-hidden="true"></i>
+    Keluar
+  </button>
+</form>
             </div>
           </div>
         </div>
