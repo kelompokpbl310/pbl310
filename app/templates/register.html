@@ -13,6 +13,7 @@
           <p class="mx-auto mt-6 mb-10 max-w-xs text-sm leading-relaxed text-white/80 sm:text-base">
             Isi data di bawah untuk membuat akun
           </p>
+          <p class="text-xs text-white/60 mb-4">Password: minimal 8 karakter, huruf besar, huruf kecil, dan angka.</p>
           <form method="POST" class="space-y-4">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="text-left">
@@ -53,28 +54,39 @@
             </div>
             <div class="text-left">
               <label for="reg-password" class="sr-only">Password</label>
-              <input
-                id="reg-password"
-                name="password"
-                type="password"
-                placeholder="Password (min. 6 karakter)"
-                autocomplete="new-password"
-                required
-                minlength="6"
-                class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30"
-              />
+              <div class="relative">
+                <input
+                  id="reg-password"
+                  name="password"
+                  type="password"
+                  placeholder="Password (min. 8 karakter)"
+                  autocomplete="new-password"
+                  required
+                  minlength="8"
+                  class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 pr-12 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30"
+                />
+                <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-maroon" data-target="reg-password" aria-label="Tampilkan password" aria-pressed="false">
+                  <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                </button>
+              </div>
             </div>
             <div class="text-left">
               <label for="reg-confirm" class="sr-only">Konfirmasi Password</label>
-              <input
-                id="reg-confirm"
-                name="confirm"
-                type="password"
-                placeholder="Konfirmasi Password"
-                autocomplete="new-password"
-                required
-                class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30"
-              />
+              <div class="relative">
+                <input
+                  id="reg-confirm"
+                  name="confirm"
+                  type="password"
+                  placeholder="Konfirmasi Password"
+                  autocomplete="new-password"
+                  required
+                  minlength="8"
+                  class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 pr-12 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30"
+                />
+                <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-maroon" data-target="reg-confirm" aria-label="Tampilkan password" aria-pressed="false">
+                  <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                </button>
+              </div>
             </div>
             <button
               type="submit"

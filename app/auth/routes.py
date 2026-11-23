@@ -141,10 +141,14 @@ def register():
         password = request.form.get('password')
         confirm = request.form.get('confirm')
 
-        if password != confirm:
+        if not password or not confirm:
+            flash('Password dan konfirmasi wajib diisi.', 'error')
+        elif password != confirm:
             flash('Password dan konfirmasi tidak cocok.', 'error')
-        elif len(password) < 6:
-            flash('Password minimal 6 karakter.', 'error')
+        elif len(password) < 8:
+            flash('Password minimal 8 karakter.', 'error')
+        elif not (any(c.isupper() for c in password) and any(c.islower() for c in password) and any(c.isdigit() for c in password)):
+            flash('Password harus mengandung huruf besar, huruf kecil, dan angka.', 'error')
         elif not email:
             flash('Email wajib diisi.', 'error')
         elif User.query.filter_by(username=username).first():
