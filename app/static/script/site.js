@@ -19,6 +19,105 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Auto-scroll to Semua Produk when search/filter is active
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('q') || params.has('category') || params.has('menu_type') ||
+      params.has('min_price') || params.has('max_price') || params.get('availability') === 'in_stock' ||
+      (params.has('sort') && params.get('sort') !== 'newest') || params.has('page')) {
+    const target = document.getElementById('semua-produk');
+    if (target) {
+      setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+  }
+
+  // Toggle filter extra controls
+  const toggleFilterBtn = document.getElementById('toggle-filter');
+  const filterExtra = document.getElementById('filter-extra');
+  if (toggleFilterBtn && filterExtra) {
+    // Show filter extra if any filter is active
+    const params = new URLSearchParams(window.location.search);
+    const hasFilter = params.has('category') || params.has('menu_type') ||
+      params.has('min_price') || params.has('max_price') || params.get('availability') === 'in_stock' ||
+      (params.has('sort') && params.get('sort') !== 'newest');
+    if (hasFilter) {
+      filterExtra.classList.remove('hidden');
+    }
+    toggleFilterBtn.addEventListener('click', () => {
+      filterExtra.classList.toggle('hidden');
+    });
+  }
+
+  // Add to cart (AJAX) - progressive enhancement
+  const showToast = (message, isError) => {
+    let toast = document.getElementById('cart-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'cart-toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      toast.className = 'fixed bottom-4 right-4 z-50 max-w-sm rounded-xl px-4 py-3 text-sm font-medium shadow-lg transition-all duration-300';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.className = 'fixed bottom-4 right-4 z-50 max-w-sm rounded-xl px-4 py-3 text-sm font-medium shadow-lg transition-all duration-300 ' +
+      (isError ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200');
+    toast.style.opacity = '1';
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+  };
+
+  const updateCartBadges = (count) => {
+    document.querySelectorAll('[data-cart-badge]').forEach(badge => {
+      badge.textContent = count;
+      badge.setAttribute('data-cart-count', count);
+      if (count > 0) {
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    });
+  };
+
+  $$('form[data-add-to-cart-form]').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      // Progressive enhancement: if JS fails, standard POST still works
+      e.preventDefault();
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-50');
+      }
+
+      try {
+        const formData = new FormData(form);
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: formData,
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'same-origin',
+        });
+        const data = await response.json();
+        if (data.success) {
+          showToast(data.message || 'Produk ditambahkan ke keranjang.', false);
+          if (data.cart_count !== undefined) {
+            updateCartBadges(data.cart_count);
+          }
+        } else {
+          showToast(data.message || 'Gagal menambahkan produk.', true);
+        }
+      } catch (err) {
+        // Fallback: standard form submission
+        form.submit();
+        return;
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-50');
+        }
+      }
+    });
+  });
+
   // Midtrans Snap payment
   const payBtn = document.getElementById('pay-btn');
   if (payBtn) {
