@@ -63,9 +63,11 @@
             class="relative flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10"
           >
             <i class="fa-solid fa-cart-shopping fa-lg"></i>
-            {% set cart_count = current_user.cart_items|length %}
+            {% set cart_count = current_user.cart_items|sum(attribute='quantity') %}
             {% if cart_count > 0 %}
-            <span data-cart-badge class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-maroon">{{ cart_count }}</span>
+            <span data-cart-badge data-cart-count="{{ cart_count }}" class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-maroon">{{ cart_count }}</span>
+            {% else %}
+            <span data-cart-badge data-cart-count="0" class="absolute -top-1 -right-1 hidden h-5 w-5 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-maroon">0</span>
             {% endif %}
           </a>
           <!-- Profile Dropdown -->

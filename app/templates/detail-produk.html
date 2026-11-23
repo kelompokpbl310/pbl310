@@ -65,7 +65,7 @@
           <p class="mt-5 leading-relaxed text-maroon/85">{{ product.description or 'Deskripsi belum tersedia.' }}</p>
 
           <!-- Add to Cart Form -->
-          <form method="POST" action="{{ url_for('main.cart_add') }}" class="mt-6 flex flex-wrap items-center gap-4">
+          <form method="POST" action="{{ url_for('main.cart_add') }}" class="mt-6 flex flex-wrap items-center gap-4" data-add-to-cart-form>
             <input type="hidden" name="product_id" value="{{ product.id }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="flex items-center overflow-hidden rounded-lg border-2 border-maroon bg-white">
@@ -299,7 +299,7 @@
             <p class="mt-3 flex items-baseline gap-2"><span class="text-base font-extrabold text-maroon sm:text-xl">Rp {{ "{:,.0f}".format(p.price).replace(",", ".") }}</span></p>
             <div class="mt-auto flex items-stretch gap-2 pt-5">
               <a href="{{ url_for('main.detail_produk', id=p.id) }}" aria-label="Lihat detail {{ p.name }}" class="inline-flex flex-1 items-center justify-center whitespace-nowrap rounded-full bg-maroon px-4 py-3 text-sm font-semibold text-white transition hover:bg-maroon-dark">Lihat Detail</a>
-              <form method="POST" action="{{ url_for('main.cart_add') }}" class="inline-flex">
+              <form method="POST" action="{{ url_for('main.cart_add') }}" class="inline-flex" data-add-to-cart-form>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="product_id" value="{{ p.id }}">
                 <input type="hidden" name="quantity" value="1">

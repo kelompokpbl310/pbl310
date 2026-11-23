@@ -30,21 +30,31 @@ def cart_add():
     if quantity is None or quantity < 1:
         quantity = 1
 
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.accept_mimetypes.accept_json
+
     if not product_id:
+        if is_ajax:
+            return jsonify({'success': False, 'message': 'Produk tidak valid.'}), 400
         flash('Produk tidak valid.', 'error')
         return redirect(request.referrer or url_for('main.produk'))
 
     product = db.session.get(Product, product_id)
     if not product or not product.is_active:
+        if is_ajax:
+            return jsonify({'success': False, 'message': 'Produk tidak ditemukan.'}), 404
         flash('Produk tidak ditemukan.', 'error')
         return redirect(request.referrer or url_for('main.produk'))
 
     # Stock 0 means not purchasable
     if product.stock <= 0:
+        if is_ajax:
+            return jsonify({'success': False, 'message': 'Produk ini sedang habis stok.'}), 409
         flash('Produk ini sedang habis stok.', 'error')
         return redirect(request.referrer or url_for('main.detail_produk', id=product_id))
 
     if quantity > product.stock:
+        if is_ajax:
+            return jsonify({'success': False, 'message': f'Stok tersedia hanya {product.stock}.'}), 409
         flash(f'Stok tersedia hanya {product.stock}.', 'error')
         return redirect(request.referrer or url_for('main.detail_produk', id=product_id))
 
@@ -64,7 +74,21 @@ def cart_add():
 
     db.session.commit()
 
-    flash(f'{product.name} ditambahkan ke keranjang.', 'success')
+    # Count total quantity in cart for badge
+    cart_items_db = CartItem.query.filter_by(user_id=current_user.id).all()
+    cart_count = sum(item.quantity for item in cart_items_db)
+
+    # AJAX request: return JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.accept_mimetypes.accept_json:
+        return jsonify({
+            'success': True,
+            'message': 'Produk ditambahkan ke keranjang.',
+            'cart_count': cart_count,
+            'product_id': product_id,
+            'quantity_added': quantity,
+        }), 200
+
+    flash('Produk ditambahkan ke keranjang.', 'success')
     return redirect(url_for('main.cart'))
 
 
