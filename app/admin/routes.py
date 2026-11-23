@@ -497,9 +497,75 @@ def pesanan_cancel(order_code):
 @login_required
 @admin_required
 def produk():
+    from sqlalchemy import or_
+
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 12, type=int)
+    if per_page not in (12, 24, 48):
+        per_page = 12
+
+    search = request.args.get('q', '').strip()
+    category_id = request.args.get('category', type=int)
+    sort = request.args.get('sort', 'newest').strip()
+
+    valid_sorts = {'newest', 'oldest', 'name_asc', 'name_desc',
+                   'price_asc', 'price_desc', 'stock_asc', 'stock_desc'}
+    if sort not in valid_sorts:
+        sort = 'newest'
+
     categories = Category.query.order_by(Category.name).all()
-    products = Product.query.order_by(Product.created_at.desc()).all()
-    return render_template('dashboard/produk.html', categories=categories, products=products)
+
+    # Build filtered query
+    query = Product.query
+    if search:
+        query = query.filter(
+                Product.name.ilike(f'%{search}%')
+            )
+    if category_id:
+        cat = Category.query.get(category_id)
+        if cat:
+            query = query.filter(Product.category_id == category_id)
+
+    # Sort
+    if sort == 'newest':
+        query = query.order_by(Product.created_at.desc(), Product.id.desc())
+    elif sort == 'oldest':
+        query = query.order_by(Product.created_at.asc(), Product.id.asc())
+    elif sort == 'name_asc':
+        query = query.order_by(Product.name.asc(), Product.id.asc())
+    elif sort == 'name_desc':
+        query = query.order_by(Product.name.desc(), Product.id.desc())
+    elif sort == 'price_asc':
+        query = query.order_by(Product.price.asc(), Product.id.asc())
+    elif sort == 'price_desc':
+        query = query.order_by(Product.price.desc(), Product.id.desc())
+    elif sort == 'stock_asc':
+        query = query.order_by(Product.stock.asc(), Product.id.asc())
+    elif sort == 'stock_desc':
+        query = query.order_by(Product.stock.desc(), Product.id.desc())
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    products = pagination.items
+
+    # Range summary
+    total = pagination.total
+    start = (pagination.page - 1) * per_page + 1 if total > 0 else 0
+    end = min(pagination.page * per_page, total)
+    total_products = Product.query.count()
+
+    return render_template('dashboard/produk.html',
+        categories=categories,
+        products=products,
+        pagination=pagination,
+        search=search,
+        category_id=category_id,
+        sort=sort,
+        per_page=per_page,
+        total=total,
+        start=start,
+        end=end,
+        total_products=total_products,
+    )
 
 
 # --- Kategori CRUD ---
@@ -1363,27 +1429,122 @@ def laporan():
 def ulasan_delete(review_id):
     from app.models import Review
     review = Review.query.get_or_404(review_id)
-    db.session.delete(review)
-    db.session.commit()
-    flash('Ulasan dihapus.', 'success')
-    return redirect(url_for('admin.ulasan'))
+
+    # Capture safe info before deletion
+    review_id_val = review.id
+    product_id_val = review.product_id
+    product_name_val = review.product.name if review.product else None
+    owner_id_val = review.user_id
+    owner_username_val = review.user.username if review.user else None
+    rating_val = review.rating
+
+    try:
+        db.session.delete(review)
+        db.session.commit()
+        log_auth_event(
+            event='review_deleted',
+            user_id=current_user.id,
+            username=current_user.username,
+            role=current_user.role,
+            status='success',
+            reason=f'review_id={review_id_val} product_id={product_id_val} '
+                   f'owner_id={owner_id_val} rating={rating_val}'
+        )
+        flash('Ulasan dihapus.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        log_auth_event(
+            event='review_delete_failed',
+            user_id=current_user.id,
+            username=current_user.username,
+            role=current_user.role,
+            status='failure',
+            reason=f'review_id={review_id_val} error={type(e).__name__}'
+        )
+        flash('Gagal menghapus ulasan.', 'error')
+
+    # Preserve query params
+    search = request.args.get('q', '').strip()
+    rating_filter = request.args.get('rating', '').strip()
+    sort = request.args.get('sort', 'newest').strip()
+    page = request.args.get('page', 1, type=int)
+
+    return redirect(url_for('admin.ulasan', q=search, rating=rating_filter, sort=sort, page=page))
 
 
 @bp.route('/ulasan')
 @login_required
 @admin_required
 def ulasan():
-    from app.models import Review
-    reviews = Review.query.order_by(Review.created_at.desc()).all()
-    # Calculate stats
-    total_reviews = len(reviews)
-    avg_rating = sum(r.rating for r in reviews) / total_reviews if total_reviews > 0 else 0
-    five_star = sum(1 for r in reviews if r.rating == 5)
-    four_star = sum(1 for r in reviews if r.rating == 4)
+    from app.models import Review, User, Product
+    from sqlalchemy import or_, func
+
+    # Query parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    search = request.args.get('q', '').strip()
+    rating_filter = request.args.get('rating', '').strip()
+    sort = request.args.get('sort', 'newest').strip()
+
+    # Validate rating filter
+    valid_ratings = {'1', '2', '3', '4', '5'}
+    if rating_filter not in valid_ratings:
+        rating_filter = ''
+
+    # Validate sort
+    valid_sorts = {'newest', 'oldest', 'highest', 'lowest'}
+    if sort not in valid_sorts:
+        sort = 'newest'
+
+    # Base query with joins
+    query = Review.query.join(User, Review.user_id == User.id, isouter=True).join(
+        Product, Review.product_id == Product.id, isouter=True
+    )
+
+    # Search
+    if search:
+        query = query.filter(
+            or_(
+                User.fullname.ilike(f'%{search}%'),
+                User.username.ilike(f'%{search}%'),
+                Product.name.ilike(f'%{search}%'),
+                Review.comment.ilike(f'%{search}%'),
+            )
+        )
+
+    # Rating filter
+    if rating_filter:
+        query = query.filter(Review.rating == int(rating_filter))
+
+    # Sort
+    if sort == 'newest':
+        query = query.order_by(Review.created_at.desc())
+    elif sort == 'oldest':
+        query = query.order_by(Review.created_at.asc())
+    elif sort == 'highest':
+        query = query.order_by(Review.rating.desc(), Review.created_at.desc())
+    elif sort == 'lowest':
+        query = query.order_by(Review.rating.asc(), Review.created_at.desc())
+
+    # Pagination
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    reviews = pagination.items
+
+    # Summary stats (from all reviews, not filtered)
+    all_reviews = Review.query.all()
+    total_reviews = len(all_reviews)
+    avg_rating = round(sum(r.rating for r in all_reviews) / total_reviews, 1) if total_reviews > 0 else 0
+    five_star = sum(1 for r in all_reviews if r.rating == 5)
+    four_star = sum(1 for r in all_reviews if r.rating == 4)
+
     return render_template('dashboard/ulasan.html',
         reviews=reviews,
+        pagination=pagination,
+        search=search,
+        rating_filter=rating_filter,
+        sort=sort,
         total_reviews=total_reviews,
-        avg_rating=round(avg_rating, 1),
+        avg_rating=avg_rating,
         five_star=five_star,
         four_star=four_star,
     )
