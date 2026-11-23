@@ -34,15 +34,20 @@ catering aqiqah dengan lebih cepat.{% endblock %} {% block content %}
             </div>
             <div class="text-left">
               <label for="login-password" class="sr-only">Password</label
-              ><input
-                id="login-password"
-                name="password"
-                type="password"
-                placeholder="Password"
-                autocomplete="current-password"
-                required
-                class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30"
-              />
+              ><div class="relative">
+                <input
+                  id="login-password"
+                  name="password"
+                  type="password"
+                  placeholder="Password"
+                  autocomplete="current-password"
+                  required
+                  class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 pr-12 text-sm text-stone-800 placeholder:text-stone-400 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/30"
+                />
+                <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-maroon" data-target="login-password" aria-label="Tampilkan password" aria-pressed="false">
+                  <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                </button>
+              </div>
             </div>
             <button
               type="submit"
